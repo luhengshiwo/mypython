@@ -52,4 +52,4 @@ clf.fit(x,y)
 score=clf.score(x,y)
 print score
 end = time.time()
-print "花费时间：%.2fs"%(end-begin)
+print u"花费时间：%.2fs"%(end-begin)
