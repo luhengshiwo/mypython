@@ -10,7 +10,7 @@ import json
 import time
 import re
 begin = time.time()
-age,degree,gender,salary1,time1,size1,position1,salary2,time2,size2,position2,salary3,time3,size3,position3,salary4,size4,numb,tag=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+age,degree,gender,salary1,time1,size1,position1,salary2,time2,size2,position2,salary3,time3,size3,position3,salary4,size4,salary5,time5,numb,tag=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
 myfile = open("D:/luheng/mypython/practice.json",'r') 
 a=0
 for eachline in myfile:
@@ -29,6 +29,16 @@ for eachline in myfile:
     num = 0
     sizeavg = 0 
     mytag=0
+    salary5.append(data[u"workExperienceList"][-1][u"salary"])
+    firststartdate = data[u"workExperienceList"][-1][u"start_date"]
+    finalenddate=data[u"workExperienceList"][0][u"end_date"]
+    if finalenddate==u'至今'or finalenddate==u'今' or finalenddate == u'Present':
+        finalenddate = "2015-10"   
+    finalend=time.strptime(finalenddate,"%Y-%m")
+    if  firststartdate == None:
+        firststartdate = "2015-1"
+    firststart = time.strptime(firststartdate,"%Y-%m") 
+    time5.append((finalend[0]-firststart[0])*12 + (finalend[1]-firststart[1]))   
     for workexp in data[u"workExperienceList"]:
     	num +=1
         if num ==1:
@@ -37,7 +47,6 @@ for eachline in myfile:
             position1.append(workexp[u"position_name"])
             enddate=workexp[u'end_date']
             startdate = workexp[u'start_date']
-            endtimefix = startdate
             if enddate==u'至今'or enddate==u'今' or enddate == u'Present':
                 enddate = "2015-10"   
             end=time.strptime(enddate,"%Y-%m")
@@ -83,18 +92,17 @@ for eachline in myfile:
     size4.append(sizeavg)	
     tag.append(mytag)
 myfile.close()    
-df = pd.DataFrame([age,degree,gender,salary1,time1,size1,position1,salary2,time2,size2,position2,salary3,time3,size3,position3,salary4,size4,numb,tag]).T
-df=df.rename(columns = {0:'age',1:'degree',2:'gender',3:'salary1',4:'time1',5:'size1',6:'position1',7:'salary2',8:'time2',9:'size2',10:'position2',11:'salary3',12:'time3',13:'size3',14:'position3',15:'salary4',16:'size4',17:'numb',18:'tag'})
+df = pd.DataFrame([age,degree,gender,salary1,time1,size1,position1,salary2,time2,size2,position2,salary3,time3,size3,position3,salary4,size4,numb,tag,salary5,time5]).T
+df=df.rename(columns = {0:'age',1:'degree',2:'gender',3:'salary1',4:'time1',5:'size1',6:'position1',7:'salary2',8:'time2',9:'size2',10:'position2',11:'salary3',12:'time3',13:'size3',14:'position3',15:'salary4',16:'size4',17:'numb',18:'tag',19:'salary5',20:'time5'})
 df.loc[df["gender"]==u"男","gender"]=0
 df.loc[df["gender"]==u"Male","gender"]=0
 df.loc[df["gender"]==u"女","gender"]=1
 df.loc[df["gender"]==u"Female","gender"]=1
 df["gender"]=df["gender"].fillna(0)
-predictors = ['age','gender','degree','salary1','time1','size1','salary2','time2','size2','salary3','time3','size3','salary4','size4','numb','tag']
-df[predictors]=df[predictors]
-print df.dtypes
-df = df[df["tag"]==0]
-print df
+predictors = ['age','gender','degree','salary1','time1','size1','salary2','time2','size2','salary3','time3','size3','salary4','size4','numb','tag','salary5','time5']
+df[predictors]=df[predictors].astype(float)
+df[["age","time1","time2","time3"]]=df[["age","time1","time2","time3"]].astype(int)
+df = df[(df["tag"]==0)&(df["age"]>17)&(df["time1"]>0)&(df["time2"]>0)&(df["time3"]>0)]
 output = open("D:/luheng/mypython/data.pkl",'wb')
 pickle.dump(df,output)
 output.close()
