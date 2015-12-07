@@ -4,6 +4,9 @@ __author__="luheng"
 import numpy as np
 import scipy as sp
 import jieba
-import gensim.models.word2vec as word2vec
-content= open("D:/luheng/mypython/1234.txt").read() 
-wg = jieba.cut(content, cut_all=False)
+from gensim import corpora,models,similarities
+corpus = [[(0, 1.0), (1, 1.0), (2, 1.0)],[(2, 1.0), (3, 1.0), (4, 1.0), (5, 1.0), (6, 1.0), (8, 1.0)],[(1, 1.0), (3, 1.0), (4, 1.0), (7, 1.0)],[(0, 1.0), (4, 2.0), (7, 1.0)],[(3, 1.0), (5, 1.0), (6, 1.0)],[(9, 1.0)],[(9, 1.0), (10, 1.0)],[(9, 1.0), (10, 1.0), (11, 1.0)],[(8, 1.0), (10, 1.0), (11, 1.0)]]
+print corpus
+tfidf = models.TfidfModel(corpus)
+vec = [(0, 1), (4, 1)]
+print(tfidf[vec]) 

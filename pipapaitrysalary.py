@@ -9,12 +9,14 @@ from pandas.io.json import json_normalize
 import json
 import time
 import re
+import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import ensemble
 from sklearn import svm
 from sklearn import naive_bayes
+from sklearn.learning_curve import learning_curve
 begin = time.time()
 salary,school,experience,degree,gender,age,name,jobtitle,salaryold=[],[],[],[],[],[],[],[],[]
 data = pd.read_csv("D:/luheng/mypython/school.txt",header=None)
@@ -110,32 +112,35 @@ y=df["salary"].astype(int)
 # for x in df["degree"].unique():
 # 	print x	
 x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=10)
-clf=ensemble.RandomForestClassifier(n_estimators=100)
+# clf=ensemble.RandomForestClassifier(n_estimators=100)
 # clf=naive_bayes.GaussianNB()
 # clf=ensemble.AdaBoostClassifier()
 # clf=svm.SVC(kernel="linear")
-# clf=linear_model.LogisticRegression()
+clf=linear_model.LogisticRegression()
 clf.fit(x_train,y_train)
-print clf.score(x,y)
-predictions=clf.predict(x_test)
-scores=0.0
-scores2=0.0
-scores3=0.0
-#随机猜测的准确率
-# a=[ x for x in x_test['salary2']]
-# b=[ y for y in y_test]
-# for i in range(len(a)):
-#     if (a[i]+1)==b[i]:
-#         scores+=1
-ysalary = [ y for y in y_test]
-for i in range(len(predictions)):
-    if predictions[i]==ysalary[i]:
-        scores+=1 
-    if abs(predictions[i]-ysalary[i] )>1:
-        scores2+=1     
-    else :
-        scores3+=1
-print scores/len(predictions)  
-print scores,scores2,scores3 
+print clf.score(x_train,y_train)
+print clf.score(x_test,y_test)
+train_sizes=np.linspace(0.1, 1.0, 5)
+train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+plt.title("Learning Curve with LR")
+plt.xlabel("Training examples")
+plt.ylabel("Score")
+plt.ylim(0.0, 1.1)
+plt.grid()
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                 train_scores_mean + train_scores_std, alpha=0.1,
+                 color="r")
+plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
+plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+         label="Training score")
+plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+         label="Cross-validation score")
+plt.legend(loc="best")
+plt.show()
 end = time.time()
 print u"花费时间：%.2fs"%(end-begin)
