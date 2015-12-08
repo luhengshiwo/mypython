@@ -94,13 +94,13 @@ for line in myfile2:
 myfile2.close()
 df = pd.DataFrame([salary,school,experience,degree,gender,age,name,jobtitle,salaryold]).T
 df=df.rename(columns ={0:"salary",1:"school",2:"experience",3:"degree",4:"gender",5:"age",6:"name",7:"jobtitle",8:"salaryold"}) 
-df.loc[df["salary"]<=2000,"salary"]=0
-df.loc[(df["salary"]<=4000)&(df["salary"]>2000),"salary"]=1
-df.loc[(df["salary"]<=6000)&(df["salary"]>4000),"salary"]=2
-df.loc[(df["salary"]<=8000)&(df["salary"]>6000),"salary"]=3
-df.loc[(df["salary"]<=10000)&(df["salary"]>8000),"salary"]=4
-df.loc[(df["salary"]<=20000)&(df["salary"]>10000),"salary"]=5
-df.loc[df["salary"]>20000,"salary"]=6
+# df.loc[df["salary"]<=2000,"salary"]=0
+# df.loc[(df["salary"]<=4000)&(df["salary"]>2000),"salary"]=1
+# df.loc[(df["salary"]<=6000)&(df["salary"]>4000),"salary"]=2
+# df.loc[(df["salary"]<=8000)&(df["salary"]>6000),"salary"]=3
+# df.loc[(df["salary"]<=10000)&(df["salary"]>8000),"salary"]=4
+# df.loc[(df["salary"]<=20000)&(df["salary"]>10000),"salary"]=5
+# df.loc[df["salary"]>20000,"salary"]=6
 # df.loc[df["salaryold"]<=2000,"salaryold"]=0
 # df.loc[(df["salaryold"]<=4000)&(df["salaryold"]>2000),"salaryold"]=1
 # df.loc[(df["salaryold"]<=6000)&(df["salaryold"]>4000),"salaryold"]=2
@@ -111,7 +111,7 @@ df.loc[df["salary"]>20000,"salary"]=6
 df.loc[df["gender"]==u"男","gender"]=0
 df.loc[df["gender"]==u"女","gender"]=1
 df.loc[df["gender"]=="","gender"]=0
-df = df[(df["degree"]!="")&(df["school"]!="")&(df["jobtitle"]!="")&(df["salaryold"]!=0)]
+df = df[(df["degree"]!="")&(df["school"]!="")&(df["jobtitle"]!="")&(df["salaryold"]!=0)&(df["salary"]>1000)]
 df = df.drop_duplicates()
 df.loc[df["degree"]==u"大专","degree"]=0	
 df.loc[df["degree"]==u"中专/技校","degree"]=0
@@ -141,55 +141,36 @@ df.loc[df["jobtitle"]==u"-服务业","jobtitle"]=10
 predictors=["school","experience","degree","gender","age","jobtitle","salaryold"]
 x=df[predictors].astype(float)
 y=df["salary"].astype(int)
+for a in x["salaryold"]:
+    print a
 #######用最适合算法的几个属性
 # lrf = ensemble.RandomForestClassifier(n_estimators=20).fit(x, y)
 # model = SelectFromModel(lrf, threshold=None, prefit=True)
 # x = model.transform(x)
 # print model.get_support()
 #用对标签贡献最大的k个属性
-kbest=SelectKBest(chi2, k=7).fit(x,y)
-x=kbest.transform(x)
-print  kbest.get_support()
-print kbest.scores_
+# kbest=SelectKBest(chi2, k=6).fit(x,y)
+# x=kbest.transform(x)
+# print  kbest.get_support()
+# print kbest.scores_
 ##数据预处理
 x = preprocessing.scale(x) 
 # #PCA
 # pca = PCA(n_components=6)
 # x=pca.fit_transform(x)
 x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=10)
-clf=ensemble.RandomForestClassifier(n_estimators=20)
-# clf=naive_bayes.GaussianNB()
-# clf=ensemble.AdaBoostClassifier()
-# clf=svm.SVC(kernel="linear")
-# clf=linear_model.LogisticRegression()
-# clf=QuadraticDiscriminantAnalysis(store_covariances=True)
-# clf=LinearDiscriminantAnalysis(solver="svd", store_covariance=True)
-# clf = NearestCentroid()
+clf = linear_model.Lasso()
 clf.fit(x_train,y_train)
-print clf.score(x_train,y_train)
-print clf.score(x_test,y_test)
+predictions=clf.predict(x_test)
+index=0
+a=0.0
+for y in y_test:
+    print abs(y-predictions[index])/predictions[index],y,predictions[index]
+    if abs(y-predictions[index])<1000:
+        a+=1
+    index+=1    
+print a,index,a/index        
+print clf.score(x_test,y_test)    
 #画学习曲线图
-train_sizes=np.linspace(0.1, 1.0, 20)
-train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
-train_scores_mean = np.mean(train_scores, axis=1)
-train_scores_std = np.std(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-test_scores_std = np.std(test_scores, axis=1)
-plt.title("Learning Curve with LR")
-plt.xlabel("Training examples")
-plt.ylabel("Score")
-plt.ylim(0.0, 1.1)
-plt.grid()
-plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                 train_scores_mean + train_scores_std, alpha=0.1,
-                 color="r")
-plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
-plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-         label="Training score")
-plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-         label="Cross-validation score")
-plt.legend(loc="best")
-plt.show()
 end = time.time()
 print u"花费时间：%.2fs"%(end-begin)
