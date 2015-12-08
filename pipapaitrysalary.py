@@ -10,15 +10,23 @@ import json
 import time
 import re
 import matplotlib.pyplot as plt
+from sklearn import preprocessing
 from sklearn import svm
 from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import ensemble
 from sklearn import svm
 from sklearn import naive_bayes
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.learning_curve import learning_curve
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+from sklearn.feature_selection import SelectFromModel
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import f_classif
 begin = time.time()
-salary,school,experience,degree,gender,age,name,jobtitle,salaryold=[],[],[],[],[],[],[],[],[]
+salary,school,experience,degree,gender,age,name,jobtitle,salaryold,test=[],[],[],[],[],[],[],[],[],[]
 data = pd.read_csv("D:/luheng/mypython/school.txt",header=None)
 schooldata = data[[1,9]]
 schooldata = schooldata.rename(columns={1:"school",9:"degree"})
@@ -31,7 +39,26 @@ for eachline in myfile:
         salary.append((int(salarynum[0])+int(salarynum[1]))/2)
     except:
         salary.append(int(salarynum[0]))  
-    school.append(data[u"highest_school_name"])  
+    school.append(data[u"highest_school_name"])
+    salaryoldtmp=0
+    index=0
+    if data[u"workexp"]==[]:
+        salaryold.append(0)
+    for work in data[u"workexp"]:
+        index+=1
+        if work[u"job_salary"]!="":
+            salaryoldnum=re.findall(r'(\w*[0-9]+)\w*',work[u"job_salary"])
+            if len(salaryoldnum) ==2:
+                salaryoldtmp = (int(salaryoldnum[0])+int(salaryoldnum[1]))/2
+                salaryold.append(salaryoldtmp)
+            elif len(salaryoldnum) ==1:
+                salaryoldtmp = int(salaryoldnum[0])
+                salaryold.append(salaryoldtmp) 
+            break
+        elif work[u"job_salary"]=="":
+            salaryoldtmp=0
+            if index == len(data[u"workexp"]) :
+                salaryold.append(salaryoldtmp)                 
     exp=data[u"latest_exp"]
     yearindex = exp.find(u"年")
     monthindex = exp.find(u"个月")
@@ -49,13 +76,11 @@ for eachline in myfile:
     experience.append(month)
     degree.append(data[u"highest_degree_level"])
     gender.append(data[u"sex"])
-    # print data[u"latest_job_salary"]
-    # salaryold.append(data[u"jobexp"][u"salary"])
     if data[u"age"]=="":
         age.append(30) 
     else:
         age.append(int(data[u"age"]))
-    name.append(data[u"name"])
+    name.append(data[u"name"])  
 myfile.close() 
 myfile2 = open("D:/luheng/mypython/jobtitle.txt",'r') 
 for line in myfile2:
@@ -66,8 +91,8 @@ for line in myfile2:
     else :
         jobtitle.append("")    
 myfile2.close()
-df = pd.DataFrame([salary,school,experience,degree,gender,age,name,jobtitle]).T
-df=df.rename(columns ={0:"salary",1:"school",2:"experience",3:"degree",4:"gender",5:"age",6:"name",7:"jobtitle"}) 
+df = pd.DataFrame([salary,school,experience,degree,gender,age,name,jobtitle,salaryold]).T
+df=df.rename(columns ={0:"salary",1:"school",2:"experience",3:"degree",4:"gender",5:"age",6:"name",7:"jobtitle",8:"salaryold"}) 
 df.loc[df["salary"]<=2000,"salary"]=1
 df.loc[(df["salary"]<=4000)&(df["salary"]>2000),"salary"]=1
 df.loc[(df["salary"]<=6000)&(df["salary"]>4000),"salary"]=2
@@ -78,7 +103,7 @@ df.loc[df["salary"]>20000,"salary"]=6
 df.loc[df["gender"]==u"男","gender"]=0
 df.loc[df["gender"]==u"女","gender"]=1
 df.loc[df["gender"]=="","gender"]=0
-df = df[(df["degree"]!="")&(df["school"]!="")&(df["jobtitle"]!="")]
+df = df[(df["degree"]!="")&(df["school"]!="")&(df["jobtitle"]!="")&(df["salaryold"]!=0)]
 df = df.drop_duplicates()
 df.loc[df["degree"]==u"大专","degree"]=0	
 df.loc[df["degree"]==u"中专/技校","degree"]=0
@@ -105,21 +130,34 @@ df.loc[df["jobtitle"]==u"-咨询-法律-教育-科研","jobtitle"]=7
 df.loc[df["jobtitle"]==u"-生物-制药-医疗-护理","jobtitle"]=8    
 df.loc[df["jobtitle"]==u"-公务员-翻译-其他","jobtitle"]=9    
 df.loc[df["jobtitle"]==u"-服务业","jobtitle"]=10 
-predictors=["school","experience","degree","gender","age","jobtitle"]
+predictors=["school","experience","degree","gender","age","jobtitle","salaryold"]
 x=df[predictors].astype(float)
 y=df["salary"].astype(int)
-# print df[["salary","school","experience","degree","gender","age"]]
-# for x in df["degree"].unique():
-# 	print x	
+#######用最适合算法的几个属性
+lrf = ensemble.RandomForestClassifier(n_estimators=20).fit(x, y)
+model = SelectFromModel(lrf, prefit=True)
+x = model.transform(x)
+print model.get_support()
+#用对标签贡献最大的k个属性
+# kbest=SelectKBest(chi2, k=5).fit(x,y)
+# x=kbest.transform(x)
+# print  kbest.get_support()
+# print x
+#数据预处理
+x = preprocessing.scale(x)
 x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=10)
-# clf=ensemble.RandomForestClassifier(n_estimators=100)
+clf=ensemble.RandomForestClassifier(n_estimators=20)
 # clf=naive_bayes.GaussianNB()
 # clf=ensemble.AdaBoostClassifier()
 # clf=svm.SVC(kernel="linear")
-clf=linear_model.LogisticRegression()
+# clf=linear_model.LogisticRegression()
+# clf=QuadraticDiscriminantAnalysis(store_covariances=True)
+# clf=LinearDiscriminantAnalysis(solver="svd", store_covariance=True)
+# clf = NearestCentroid()
 clf.fit(x_train,y_train)
 print clf.score(x_train,y_train)
 print clf.score(x_test,y_test)
+#画学习曲线图
 train_sizes=np.linspace(0.1, 1.0, 5)
 train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
 train_scores_mean = np.mean(train_scores, axis=1)
