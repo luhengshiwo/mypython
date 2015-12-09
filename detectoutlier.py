@@ -11,21 +11,16 @@ import time
 import re
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
+from sklearn.covariance import EllipticEnvelope
 from sklearn import svm
-from sklearn import linear_model
-from sklearn import cross_validation
 from sklearn import ensemble
-from sklearn import svm
-from sklearn import naive_bayes
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.learning_curve import learning_curve
 from sklearn.neighbors.nearest_centroid import NearestCentroid
 from sklearn.feature_selection import SelectFromModel
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import f_classif
-from sklearn.decomposition import PCA
+from sklearn import cross_validation
 begin = time.time()
 salary,school,experience,degree,gender,age,name,jobtitle,salaryold,test=[],[],[],[],[],[],[],[],[],[]
 data = pd.read_csv("D:/luheng/mypython/school.txt",header=None)
@@ -94,13 +89,13 @@ for line in myfile2:
 myfile2.close()
 df = pd.DataFrame([salary,school,experience,degree,gender,age,name,jobtitle,salaryold]).T
 df=df.rename(columns ={0:"salary",1:"school",2:"experience",3:"degree",4:"gender",5:"age",6:"name",7:"jobtitle",8:"salaryold"}) 
-df.loc[df["salary"]<=2000,"salary"]=0
-df.loc[(df["salary"]<=4000)&(df["salary"]>2000),"salary"]=1
-df.loc[(df["salary"]<=6000)&(df["salary"]>4000),"salary"]=2
-df.loc[(df["salary"]<=8000)&(df["salary"]>6000),"salary"]=3
-df.loc[(df["salary"]<=10000)&(df["salary"]>8000),"salary"]=4
-df.loc[(df["salary"]<=20000)&(df["salary"]>10000),"salary"]=5
-df.loc[df["salary"]>20000,"salary"]=6
+# df.loc[df["salary"]<=2000,"salary"]=0
+# df.loc[(df["salary"]<=4000)&(df["salary"]>2000),"salary"]=1
+# df.loc[(df["salary"]<=6000)&(df["salary"]>4000),"salary"]=2
+# df.loc[(df["salary"]<=8000)&(df["salary"]>6000),"salary"]=3
+# df.loc[(df["salary"]<=10000)&(df["salary"]>8000),"salary"]=4
+# df.loc[(df["salary"]<=20000)&(df["salary"]>10000),"salary"]=5
+# df.loc[df["salary"]>20000,"salary"]=6
 # df.loc[df["salaryold"]<=2000,"salaryold"]=0
 # df.loc[(df["salaryold"]<=4000)&(df["salaryold"]>2000),"salaryold"]=1
 # df.loc[(df["salaryold"]<=6000)&(df["salaryold"]>4000),"salaryold"]=2
@@ -112,6 +107,7 @@ df.loc[df["gender"]==u"男","gender"]=0
 df.loc[df["gender"]==u"女","gender"]=1
 df.loc[df["gender"]=="","gender"]=0
 df = df[(df["degree"]!="")&(df["school"]!="")&(df["jobtitle"]!="")&(df["salaryold"]!=0)]
+#去除重复数据
 df = df.drop_duplicates()
 df.loc[df["degree"]==u"大专","degree"]=0	
 df.loc[df["degree"]==u"中专/技校","degree"]=0
@@ -139,57 +135,37 @@ df.loc[df["jobtitle"]==u"-生物-制药-医疗-护理","jobtitle"]=8
 df.loc[df["jobtitle"]==u"-公务员-翻译-其他","jobtitle"]=9    
 df.loc[df["jobtitle"]==u"-服务业","jobtitle"]=10 
 predictors=["school","experience","degree","gender","age","jobtitle","salaryold"]
-x=df[predictors].astype(float)
-y=df["salary"].astype(int)
-#######用最适合算法的几个属性
-# lrf = ensemble.RandomForestClassifier(n_estimators=20).fit(x, y)
-# model = SelectFromModel(lrf, threshold=None, prefit=True)
-# x = model.transform(x)
-# print model.get_support()
-#用对标签贡献最大的k个属性
-kbest=SelectKBest(chi2, k=7).fit(x,y)
-x=kbest.transform(x)
-print  kbest.get_support()
-print kbest.scores_
-##数据预处理
-x = preprocessing.scale(x) 
-# #PCA
-# pca = PCA(n_components=6)
-# x=pca.fit_transform(x)
-x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=10)
-# clf=ensemble.RandomForestClassifier(n_estimators=20)
-# clf=naive_bayes.GaussianNB()
-clf=ensemble.AdaBoostClassifier()
-# clf=svm.SVC(kernel="linear")
-# clf=linear_model.LogisticRegression()
-# clf=QuadraticDiscriminantAnalysis(store_covariances=True)
-# clf=LinearDiscriminantAnalysis(solver="svd", store_covariance=True)
-# clf = NearestCentroid()
-clf.fit(x_train,y_train)
-print clf.score(x_train,y_train)
-print clf.score(x_test,y_test)
-#画学习曲线图
-train_sizes=np.linspace(0.1, 1.0, 20)
-train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
-train_scores_mean = np.mean(train_scores, axis=1)
-train_scores_std = np.std(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-test_scores_std = np.std(test_scores, axis=1)
-plt.title("Learning Curve with LR")
-plt.xlabel("Training examples")
-plt.ylabel("Score")
-plt.ylim(0.0, 1.1)
-plt.grid()
-plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                 train_scores_mean + train_scores_std, alpha=0.1,
-                 color="r")
-plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
-plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-         label="Training score")
-plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-         label="Cross-validation score")
-plt.legend(loc="best")
+x1=df[predictors].astype(float)
+y1=df["salary"].astype(int)
+# print df[["salaryold","salary"]]
+
+#作图来表现支持度
+plt.scatter(df["salaryold"],df["salary"])
+plt.xlim(0,30000)
+plt.ylim(0,30000)
+plt.xlabel("salaryold")
+plt.ylabel("salary")
+plt.title( "salaryold and salary" )
 plt.show()
+#离群点检测
+# clf=EllipticEnvelope()
+# clf=svm.OneClassSVM(kernel="linear")
+# clf.fit(x1)
+# a =clf.predict(x1)
+# d=0
+# for x in a:
+#     if x==1:
+#         d+=1
+# print len(a),d     
+#以下是两个dataframe合并的方法，在书本的191页有详细说明   
+# df2=pd.DataFrame([a]).T
+# df2=df2.rename(columns ={0:"outlier"})
+# index=np.arange(688)
+# df = df.set_index(index)
+# df3=pd.merge(df,df2,left_index=True,right_index=True)
+# df3=df3[(df3["outlier"]==1)]
+# predictors=["school","experience","degree","gender","age","jobtitle","salaryold"]
+# x=df3[predictors].astype(float)
+# y=df3["salary"].astype(int)    
 end = time.time()
 print u"花费时间：%.2fs"%(end-begin)
