@@ -154,14 +154,16 @@ y=df["salary"].astype(int)
 # ##数据预处理
 # x = preprocessing.scale(x) 
 #PCA
-pca = PCA(n_components=3)
-x=pca.fit_transform(x)
-print pca.explained_variance_ratio_
+# pca = PCA(n_components=3)
+# x=pca.fit_transform(x)
+# print pca.explained_variance_ratio_
 x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=20)
 # clf=ensemble.ExtraTreesClassifier(n_estimators=20)
 # clf=naive_bayes.GaussianNB()
 clf=ensemble.AdaBoostClassifier()
+scores = cross_validation.cross_val_score(clf,x,y,cv=10)
+print scores
 # clf=ensemble.GradientBoostingClassifier()
 # clf=linear_model.SGDClassifier()
 # clf=svm.SVC(kernel="linear")

@@ -21,6 +21,8 @@ from sklearn.feature_selection import chi2
 from sklearn.feature_selection import f_classif
 from sklearn import svm
 from sklearn import tree
+from sklearn.learning_curve import learning_curve
+import matplotlib.pyplot as plt
 # from sklearn.externals.six import StringIO
 # import pydot
 reload(sys)
@@ -131,69 +133,74 @@ df=df.rename(columns ={0:"status_id",1:"status_title",2:"name",3:"sex",4:"age",5
 # print i	    
 # df.loc[df["status_title"]==u"筛选不合格","status"]=0
 # df.loc[df["status_title"]!=u"筛选不合格","status"]=1	
-for x in df["status_title"].unique():
-	print x
-df2 = df["status_title"]	
-print df2.describe()	
+# for x in df["status_title"].unique():
+# 	print x
+# df2 = df["status_title"]	
+# print df2.describe()	
 
-# df.loc[df["status_title"]==u"筛选不合格","status"]=0
-# df.loc[df["status_title"]!=u"筛选不合格","status"]=1
-# df.loc[df["sex"]==u"M","sex"]=0
-# df.loc[df["sex"]==u"F","sex"]=1
-# df["sex"]=df["sex"].fillna(0)
-# df.loc[df["age"]<1,"age"]=22
-# df["workexp_months"]=df["workexp_months"].fillna(0)
-# df.loc[df["marriage"]=="","marriage"]="4"
-# df.loc[df["marriage"]==u"0","marriage"]="4"
-# df["school_level"]=df["school_level"].fillna("0")
-# df.loc[df["degree_level"]==u"大专","degree_level"]=1	
-# df.loc[df["degree_level"]==u"中技","degree_level"]=0
-# df.loc[df["degree_level"]==u"中专","degree_level"]=0
-# df.loc[df["degree_level"]==u"初中","degree_level"]=0
-# df.loc[df["degree_level"]==u"高中","degree_level"]=0
-# df.loc[df["degree_level"]=="","degree_level"]=1
-# df.loc[df["degree_level"]==u"本科","degree_level"]=2
-# df.loc[df["degree_level"]==u"硕士","degree_level"]=3
-# df.loc[df["degree_level"]==u"博士","degree_level"]=3
-# df.loc[df["degree_level"]==u"MBA","degree_level"]=3
-# df["degree_level"]=df["degree_level"].fillna(1)
-# df["latest_workexp_job_salary"]=df["latest_workexp_job_salary"].fillna("0")
-# df.loc[df["latest_workexp_job_salary"]=="350066","latest_workexp_job_salary"]="3500"
-# df.loc[df["job_degree_level"]==u"大专","job_degree_level"]=1	
-# df.loc[df["job_degree_level"]==u"中技","job_degree_level"]=0
-# df.loc[df["job_degree_level"]==u"中专","job_degree_level"]=0
-# df.loc[df["job_degree_level"]==u"高中","job_degree_level"]=0
-# df.loc[df["job_degree_level"]==u"本科","job_degree_level"]=2
-# df.loc[df["job_degree_level"]==u"硕士","job_degree_level"]=3
-# df.loc[df["job_degree_level"]==u"其他","job_degree_level"]=4
-# df[["job_degree_level"]]=df[["job_degree_level"]].fillna(3)
-# df.loc[df["job_exp"]==u"实习生","job_exp"]=0	
-# df.loc[df["job_exp"]==u"应届毕业生","job_exp"]=-1
-# df.loc[df["job_exp"]==u"学生兼职/假期工","job_exp"]=0
-# df.loc[df["job_exp"]==u"1年以上","job_exp"]=12
-# df.loc[df["job_exp"]==u"2年以上","job_exp"]=24
-# df.loc[df["job_exp"]==u"3年以上","job_exp"]=36
-# df.loc[df["job_exp"]==u"5年以上","job_exp"]=60
-# df.loc[df["job_exp"]==u"8年以上","job_exp"]=96
-# df.loc[df["job_exp"]==u"10年以上","job_exp"]=120
-# df[["job_exp"]]=df[["job_exp"]].fillna(0)
-# predictors=["sex","age","workexp_months","job_exp","marriage","school_level","degree_level","job_degree_level","salary_type","latest_workexp_job_salary","expect_salary","location"]
-# x=df[predictors].astype(float)
-# y=df["status"].astype(int)
-# kbest=SelectKBest(f_classif, k=10).fit(x,y)
-# x=kbest.transform(x)
-# print  kbest.get_support()
-# print kbest.scores_
-# x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=100)
-# # clf=ensemble.RandomForestClassifier(n_estimators=10)
-# # clf=svm.SVC(kernel="linear")
-# # clf=linear_model.LogisticRegression()
-# clf = tree.DecisionTreeClassifier()
-# clf.fit(x_train,y_train)
-# # print x_train
-# # print y_train
-# print clf.score(x_train,y_train)
-# print clf.score(x_test,y_test)
+df.loc[df["status_title"]==u"筛选不合格","status"]=0
+df.loc[df["status_title"]!=u"筛选不合格","status"]=1
+df.loc[df["sex"]==u"M","sex"]=0
+df.loc[df["sex"]==u"F","sex"]=1
+df["sex"]=df["sex"].fillna(0)
+df.loc[df["age"]<1,"age"]=22
+df["workexp_months"]=df["workexp_months"].fillna(0)
+df.loc[df["marriage"]=="","marriage"]="4"
+df.loc[df["marriage"]==u"0","marriage"]="4"
+df["school_level"]=df["school_level"].fillna("0")
+df.loc[df["degree_level"]==u"大专","degree_level"]=1	
+df.loc[df["degree_level"]==u"中技","degree_level"]=0
+df.loc[df["degree_level"]==u"中专","degree_level"]=0
+df.loc[df["degree_level"]==u"初中","degree_level"]=0
+df.loc[df["degree_level"]==u"高中","degree_level"]=0
+df.loc[df["degree_level"]=="","degree_level"]=1
+df.loc[df["degree_level"]==u"本科","degree_level"]=2
+df.loc[df["degree_level"]==u"硕士","degree_level"]=3
+df.loc[df["degree_level"]==u"博士","degree_level"]=3
+df.loc[df["degree_level"]==u"MBA","degree_level"]=3
+df["degree_level"]=df["degree_level"].fillna(1)
+df["latest_workexp_job_salary"]=df["latest_workexp_job_salary"].fillna("0")
+df.loc[df["latest_workexp_job_salary"]=="350066","latest_workexp_job_salary"]="3500"
+df.loc[df["job_degree_level"]==u"大专","job_degree_level"]=1	
+df.loc[df["job_degree_level"]==u"中技","job_degree_level"]=0
+df.loc[df["job_degree_level"]==u"中专","job_degree_level"]=0
+df.loc[df["job_degree_level"]==u"高中","job_degree_level"]=0
+df.loc[df["job_degree_level"]==u"本科","job_degree_level"]=2
+df.loc[df["job_degree_level"]==u"硕士","job_degree_level"]=3
+df.loc[df["job_degree_level"]==u"其他","job_degree_level"]=4
+df[["job_degree_level"]]=df[["job_degree_level"]].fillna(3)
+df.loc[df["job_exp"]==u"实习生","job_exp"]=0	
+df.loc[df["job_exp"]==u"应届毕业生","job_exp"]=-1
+df.loc[df["job_exp"]==u"学生兼职/假期工","job_exp"]=0
+df.loc[df["job_exp"]==u"1年以上","job_exp"]=12
+df.loc[df["job_exp"]==u"2年以上","job_exp"]=24
+df.loc[df["job_exp"]==u"3年以上","job_exp"]=36
+df.loc[df["job_exp"]==u"5年以上","job_exp"]=60
+df.loc[df["job_exp"]==u"8年以上","job_exp"]=96
+df.loc[df["job_exp"]==u"10年以上","job_exp"]=120
+df[["job_exp"]]=df[["job_exp"]].fillna(0)
+predictors=["sex","age","workexp_months","job_exp","marriage","school_level","degree_level","job_degree_level","salary_type","latest_workexp_job_salary","expect_salary","location"]
+output = open("D:/luheng/mypython/truedata.pkl",'wb')
+pickle.dump(df,output)
+x=df[predictors].astype(float)
+y=df["status"].astype(int)
+kbest=SelectKBest(f_classif, k=10).fit(x,y)
+x=kbest.transform(x)
+print  kbest.get_support()
+print kbest.scores_
+x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=100)
+# clf=ensemble.RandomForestClassifier(n_estimators=10)
+# clf=svm.SVC(kernel="linear")
+# clf=linear_model.LogisticRegression()
+clf = tree.DecisionTreeClassifier()
+# scores = cross_validation.cross_val_score(clf,x,y,cv=10)
+# print scores
+clf.fit(x_train,y_train)
+# print x_train
+# print y_train
+print clf.score(x_train,y_train)
+print clf.score(x_test,y_test)
+#画决策树图
 # dot_data = StringIO()
 # tree.export_graphviz(clf,out_file=dot_data)
 # graph=pydot.graph_from_dot_data(dot_data.getvalue())
@@ -206,5 +213,30 @@ print df2.describe()
 # df2=df[["latest_workexp_job_spec","latest_workexp_job_position","workexp","projectexp"]]
 # df3=df[["industry","position"]]
 # df3.to_csv("D:/luheng/mypython/HR.txt",index=False,header=False)
+#画学习曲线图
+train_sizes=np.linspace(0.1, 1.0, 20)
+train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+plt.title("Learning Curve with Tree")
+plt.xlabel("Training examples")
+plt.ylabel("Score")
+plt.ylim(0.0, 1.1) 
+plt.grid()
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                 train_scores_mean + train_scores_std, alpha=0.1,
+                 color="r")
+plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
+plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+         label="Training score")
+plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+         label="Cross-validation score")
+plt.legend(loc="best")
+plt.show()
+
+
 end = time.time()
 print u"花费时间：%.2fs"%(end-begin)
