@@ -21,6 +21,9 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import f_classif
 from sklearn import cross_validation
+from sklearn.decomposition import PCA
+import matplotlib.mlab as mlab
+from mpl_toolkits.mplot3d import Axes3D
 begin = time.time()
 salary,school,experience,degree,gender,age,name,jobtitle,salaryold,test=[],[],[],[],[],[],[],[],[],[]
 data = pd.read_csv("D:/luheng/mypython/school.txt",header=None)
@@ -135,17 +138,38 @@ df.loc[df["jobtitle"]==u"-生物-制药-医疗-护理","jobtitle"]=8
 df.loc[df["jobtitle"]==u"-公务员-翻译-其他","jobtitle"]=9    
 df.loc[df["jobtitle"]==u"-服务业","jobtitle"]=10 
 predictors=["school","experience","degree","gender","age","jobtitle","salaryold"]
-x1=df[predictors].astype(float)
-y1=df["salary"].astype(int)
+x=df[predictors].astype(float)
+y=df["salary"].astype(int)
 # print df[["salaryold","salary"]]
+#利用PCA找出3维再画图
+x = preprocessing.scale(x) 
+pca = PCA(n_components=2)
+x=pca.fit_transform(x).T
+# x = preprocessing.scale(x) 
+# print pca.explained_variance_ratio_
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
+#     xs = x[0]
+#     ys = x[1]
+#     zs = x[2]
+#     ax.scatter(xs, ys, zs, c=c, marker=m)
 
+# ax.set_xlabel('X Label')
+# ax.set_ylabel('Y Label')
+# ax.set_zlabel('Z Label')
+
+# plt.show()
 #作图来表现支持度
-plt.scatter(df["salaryold"],df["salary"])
-plt.xlim(0,30000)
-plt.ylim(0,30000)
-plt.xlabel("salaryold")
-plt.ylabel("salary")
-plt.title( "salaryold and salary" )
+N=688
+colors = np.random.rand(N)
+area = np.pi * (np.random.rand(N)*10 )**2 
+plt.scatter(x[0],x[1], s=area, c=colors, alpha=0.5)
+plt.xlim(-30,30)
+plt.ylim(-30,30)
+plt.xlabel("d1")
+plt.ylabel("d2")
+plt.title( "PCA to 2D" )
 plt.show()
 #离群点检测
 # clf=EllipticEnvelope()

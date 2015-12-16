@@ -147,19 +147,23 @@ y=df["salary"].astype(int)
 # x = model.transform(x)
 # print model.get_support()
 #用对标签贡献最大的k个属性
-kbest=SelectKBest(chi2, k=7).fit(x,y)
-x=kbest.transform(x)
-print  kbest.get_support()
-print kbest.scores_
-##数据预处理
-x = preprocessing.scale(x) 
-# #PCA
-# pca = PCA(n_components=6)
-# x=pca.fit_transform(x)
-x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=10)
+# kbest=SelectKBest(chi2, k=7).fit(x,y)
+# x=kbest.transform(x)
+# print  kbest.get_support()
+# print kbest.scores_
+# ##数据预处理
+# x = preprocessing.scale(x) 
+#PCA
+pca = PCA(n_components=3)
+x=pca.fit_transform(x)
+print pca.explained_variance_ratio_
+x_train, x_test,y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.3,random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=20)
+# clf=ensemble.ExtraTreesClassifier(n_estimators=20)
 # clf=naive_bayes.GaussianNB()
 clf=ensemble.AdaBoostClassifier()
+# clf=ensemble.GradientBoostingClassifier()
+# clf=linear_model.SGDClassifier()
 # clf=svm.SVC(kernel="linear")
 # clf=linear_model.LogisticRegression()
 # clf=QuadraticDiscriminantAnalysis(store_covariances=True)
