@@ -4,11 +4,18 @@ __author__="luheng"
 import numpy as np
 import jieba
 import nltk
-content= open("D:/luheng/mypython/1234.txt").read() 
+import time
+begin = time.time()
+content= open("D:/luheng/mypython/mynltktext.txt").read() 
+corpus=[]
 wg = jieba.cut(content, cut_all=False)
-text=[word for word in wg]
-a = nltk.FreqDist(text)
-print a
+a=" ".join(wg)
+corpus.append(a)
+text = corpus[0]
+print text
+print len(text)
+end = time.time()
+print u"花费时间：%.2fs" % (end - begin)
 
 
    
