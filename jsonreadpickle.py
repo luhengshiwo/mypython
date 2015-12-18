@@ -38,7 +38,7 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-
+print df["sim"].describe()
 x = df[predictors].astype(float)
 y = df["status"].astype(int)
 # kbest=SelectKBest(f_classif, k=4).fit(x,y)
@@ -48,9 +48,9 @@ y = df["status"].astype(int)
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
-clf = svm.SVC()
+# clf = svm.SVC()
 # clf=linear_model.LogisticRegression()
-# clf = tree.DecisionTreeClassifier()
+clf = tree.DecisionTreeClassifier()
 print clf
 # clf = tree.ExtraTreeClassifier()
 # clf=naive_bayes.GaussianNB()
