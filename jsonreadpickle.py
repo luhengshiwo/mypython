@@ -26,6 +26,9 @@ from sklearn.learning_curve import learning_curve
 import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn import neighbors
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 # from sklearn.externals.six import StringIO
 # import pydot
 begin = time.time()
@@ -39,6 +42,10 @@ df = pickle.load(pickle_file)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
 print df["sim"].describe()
+df1=df[["status","position","expect_position"]]
+# print df1
+df1.to_csv("D:/luheng/mypython/mylook.txt",index=False,header=False)
+
 x = df[predictors].astype(float)
 y = df["status"].astype(int)
 # kbest=SelectKBest(f_classif, k=4).fit(x,y)
