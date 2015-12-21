@@ -41,10 +41,9 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-print df["sim"].describe()
-df1=df[["status","position","expect_position"]]
+df1=df[["status","position","expect_position","salary_type","expect_salary"]]
 # print df1
-df1.to_csv("D:/luheng/mypython/mylook.txt",index=False,header=False)
+df1.to_csv("D:/luheng/mypython/mylook.csv",index=False,header=False)
 
 x = df[predictors].astype(float)
 y = df["status"].astype(int)

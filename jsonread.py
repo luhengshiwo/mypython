@@ -33,6 +33,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 source = "D:/luheng/mypython/parsedata2"
+corpus = []
 status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim = [
 ], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
 for root, dirs, files in os.walk(source):
@@ -134,41 +135,7 @@ for root, dirs, files in os.walk(source):
                 else:
                     long_desc.append("")
                 employment_type.append(data[key]["employment_type"])
-           #开始计算ifidf文本相似     
-                try:
-                    corpus = []
-                    wg1 = jieba.cut(myproject, cut_all=False)
-                    a1 = " ".join(wg1)
-                    corpus.append(a1)
-                    wg2 = jieba.cut(data[key]["long_desc"], cut_all=False)
-                    a2 = " ".join(wg2)
-                    corpus.append(a2)
-                    vectorizer = CountVectorizer()
-        # 该类会将文本中的词语转换为词频矩阵，矩阵元素a[i][j] 表示j词在i类文本下的词频
-                    transformer = TfidfTransformer()
-        # 该类会统计每个词语的tf-idf权值
-                    tfidf = transformer.fit_transform(
-                        vectorizer.fit_transform(corpus))
-        # 第一个fit_transform是计算tf-idf，第二个fit_transform是将文本转为词频矩阵
-                    w = vectorizer.fit_transform(corpus)
-                    word = vectorizer.get_feature_names()
-        # 获取词袋模型中的所有词语
-                    weight = tfidf.toarray()
-        # 将tf-idf矩阵抽取出来，元素a[i][j]表示j词在i类文本中的tf-idf权重
-                    a = weight[0]
-                    b = weight[1]
-                    num = float(sum(a * b.T))
-        # 若为行向量则 A * B.T
-                    denom = np.linalg.norm(a) * np.linalg.norm(b)
-                    cos = num / denom
-        # 余弦值
-                    mysim = 0.5 + 0.5 * cos
-                except:
-                    mysim = 0
-                if np.isnan(mysim):
-                    mysim = 0        
-                sim.append(mysim)
-        myfile.close()
+        myfile.close()   
 df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary,
                    latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location]).T
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
@@ -184,9 +151,49 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # 	print x
 # df2 = df["status_title"]
 # print df2.describe()
-
+#筛选不合格=18594
+# 面试不合格=355
+# 已面试=6721
+# 面试取消=2019
+# 已发offer=126
+# 试用期=1238
+# 离职=90
+# 筛选合格=5315
+# 缺席=275
+#拒绝offer=250
+# 复试=240
+# 联系方式无效=14
+# 将面试=166
+# 接受offer=90
+# 面试合格=255
+# 已通知落选=220
+# 转正=75
+# 筛选待定=365
+# 辞退=29
+# 需再联系=35
 df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
-df.loc[df["status_title"] != u"筛选不合格", "status"] = 1
+df.loc[df["status_title"] == u"面试不合格", "status"] = 1
+df.loc[df["status_title"] == u"已面试", "status"] = 2
+df.loc[df["status_title"] == u"面试取消", "status"] = 3
+df.loc[df["status_title"] == u"已发offer", "status"] = 4
+df.loc[df["status_title"] == u"试用期", "status"] = 5
+df.loc[df["status_title"] == u"离职", "status"] = 6
+df.loc[df["status_title"] == u"筛选合格", "status"] = 7
+df.loc[df["status_title"] == u"缺席", "status"] = 8
+df.loc[df["status_title"] == u"拒绝offer", "status"] = 9
+df.loc[df["status_title"] == u"复试", "status"] = 10
+df.loc[df["status_title"] == u"联系方式无效", "status"] = 11
+df.loc[df["status_title"] == u"将面试", "status"] = 12
+df.loc[df["status_title"] == u"接受offer", "status"] = 13
+df.loc[df["status_title"] == u"面试合格", "status"] = 14
+df.loc[df["status_title"] == u"已通知落选", "status"] = 15
+df.loc[df["status_title"] == u"转正", "status"] = 16
+df.loc[df["status_title"] == u"筛选待定", "status"] = 17
+df.loc[df["status_title"] == u"辞退", "status"] = 18
+df.loc[df["status_title"] == u"需再联系", "status"] = 19
+df1=df[["status"]]
+# print df1
+df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 df.loc[df["sex"] == u"M", "sex"] = 0
 df.loc[df["sex"] == u"F", "sex"] = 1
 df["sex"] = df["sex"].fillna(0)
@@ -228,15 +235,15 @@ df.loc[df["job_exp"] == u"8年以上", "job_exp"] = 96
 df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
 predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]
+              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]              
 output = open("D:/luheng/mypython/truedata.pkl", 'wb')
 pickle.dump(df, output)
 x = df[predictors].astype(float)
 y = df["status"].astype(int)
-kbest = SelectKBest(f_classif, k=10).fit(x, y)
-x = kbest.transform(x)
-print kbest.get_support()
-print kbest.scores_
+# kbest = SelectKBest(f_classif, k=10).fit(x, y)
+# x = kbest.transform(x)
+# print kbest.get_support()
+# print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
@@ -287,7 +294,5 @@ plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
          label="Cross-validation score")
 plt.legend(loc="best")
 plt.show()
-
-
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)
