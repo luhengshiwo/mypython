@@ -32,8 +32,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
-source = "D:/luheng/mypython/parsedata"
-corpus = []
+source = "D:/luheng/mypython/parsedata2"
 status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim = [
 ], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
 for root, dirs, files in os.walk(source):
@@ -135,13 +134,41 @@ for root, dirs, files in os.walk(source):
                 else:
                     long_desc.append("")
                 employment_type.append(data[key]["employment_type"])
-                # if "pipapai" in data[key]["comp_email"]:
-                #     comp.append(1)
-                # elif "ifxxtt123@163.com" in data[key]["comp_email"] :  
-                #     comp.append(1)
-                # else :
-                #     comp.append(0)         
-        myfile.close()   
+           #开始计算ifidf文本相似     
+                try:
+                    corpus = []
+                    wg1 = jieba.cut(myproject, cut_all=False)
+                    a1 = " ".join(wg1)
+                    corpus.append(a1)
+                    wg2 = jieba.cut(data[key]["long_desc"], cut_all=False)
+                    a2 = " ".join(wg2)
+                    corpus.append(a2)
+                    vectorizer = CountVectorizer()
+        # 该类会将文本中的词语转换为词频矩阵，矩阵元素a[i][j] 表示j词在i类文本下的词频
+                    transformer = TfidfTransformer()
+        # 该类会统计每个词语的tf-idf权值
+                    tfidf = transformer.fit_transform(
+                        vectorizer.fit_transform(corpus))
+        # 第一个fit_transform是计算tf-idf，第二个fit_transform是将文本转为词频矩阵
+                    w = vectorizer.fit_transform(corpus)
+                    word = vectorizer.get_feature_names()
+        # 获取词袋模型中的所有词语
+                    weight = tfidf.toarray()
+        # 将tf-idf矩阵抽取出来，元素a[i][j]表示j词在i类文本中的tf-idf权重
+                    a = weight[0]
+                    b = weight[1]
+                    num = float(sum(a * b.T))
+        # 若为行向量则 A * B.T
+                    denom = np.linalg.norm(a) * np.linalg.norm(b)
+                    cos = num / denom
+        # 余弦值
+                    mysim = 0.5 + 0.5 * cos
+                except:
+                    mysim = 0
+                if np.isnan(mysim):
+                    mysim = 0        
+                sim.append(mysim)
+        myfile.close()
 df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary,
                    latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location]).T
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
@@ -157,55 +184,13 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # 	print x
 # df2 = df["status_title"]
 # print df2.describe()
-#筛选不合格=18594
-# 面试不合格=355
-# 已面试=6721
-# 面试取消=2019
-# 已发offer=126
-# 试用期=1238
-# 离职=90
-# 筛选合格=5315
-# 缺席=275
-#拒绝offer=250
-# 复试=240
-# 联系方式无效=14
-# 将面试=166
-# 接受offer=90
-# 面试合格=255
-# 已通知落选=220
-# 转正=75
-# 筛选待定=365
-# 辞退=29
-# 需再联系=35
-# df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
-# df.loc[df["status_title"] == u"面试不合格", "status"] = 0
-# df.loc[df["status_title"] == u"已面试", "status"] = 2
-# df.loc[df["status_title"] == u"面试取消", "status"] = 2
-# df.loc[df["status_title"] == u"已发offer", "status"] = 1
-# df.loc[df["status_title"] == u"试用期", "status"] = 1
-# df.loc[df["status_title"] == u"离职", "status"] = 1
-# df.loc[df["status_title"] == u"筛选合格", "status"] = 2
-# df.loc[df["status_title"] == u"缺席", "status"] = 2
-# df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
-# df.loc[df["status_title"] == u"复试", "status"] = 2
-# df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
-# df.loc[df["status_title"] == u"将面试", "status"] = 2
-# df.loc[df["status_title"] == u"接受offer", "status"] = 1
-# df.loc[df["status_title"] == u"面试合格", "status"] = 1
-# df.loc[df["status_title"] == u"已通知落选", "status"] = 0
-# df.loc[df["status_title"] == u"转正", "status"] = 1
-# df.loc[df["status_title"] == u"筛选待定", "status"] = 2
-# df.loc[df["status_title"] == u"辞退", "status"] = 1
-# df.loc[df["status_title"] == u"需再联系", "status"] = 2
+
 df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
 df.loc[df["status_title"] != u"筛选不合格", "status"] = 1
-# df1=df[["status"]]
-# print df["comp"].describe()
-# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 df.loc[df["sex"] == u"M", "sex"] = 0
 df.loc[df["sex"] == u"F", "sex"] = 1
 df["sex"] = df["sex"].fillna(0)
-df.loc[df["age"] <= 1, "age"] = 22
+df.loc[df["age"] < 1, "age"] = 22
 df["workexp_months"] = df["workexp_months"].fillna(0)
 df.loc[df["marriage"] == "", "marriage"] = "4"
 df.loc[df["marriage"] == u"0", "marriage"] = "4"
@@ -214,26 +199,22 @@ df.loc[df["degree_level"] == u"大专", "degree_level"] = 1
 df.loc[df["degree_level"] == u"中技", "degree_level"] = 0
 df.loc[df["degree_level"] == u"中专", "degree_level"] = 0
 df.loc[df["degree_level"] == u"初中", "degree_level"] = 0
-df.loc[df["degree_level"] == u"初中及以下", "degree_level"] = 0
 df.loc[df["degree_level"] == u"高中", "degree_level"] = 0
 df.loc[df["degree_level"] == "", "degree_level"] = 1
 df.loc[df["degree_level"] == u"本科", "degree_level"] = 2
 df.loc[df["degree_level"] == u"硕士", "degree_level"] = 3
 df.loc[df["degree_level"] == u"博士", "degree_level"] = 3
-df.loc[df["degree_level"] == u"博士后", "degree_level"] = 3
 df.loc[df["degree_level"] == u"MBA", "degree_level"] = 3
 df["degree_level"] = df["degree_level"].fillna(1)
 df["latest_workexp_job_salary"] = df["latest_workexp_job_salary"].fillna("0")
 df.loc[df["latest_workexp_job_salary"] ==
        "350066", "latest_workexp_job_salary"] = "3500"
 df.loc[df["job_degree_level"] == u"大专", "job_degree_level"] = 1
-df.loc[df["job_degree_level"] == u"初中", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"中技", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"中专", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"高中", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"本科", "job_degree_level"] = 2
 df.loc[df["job_degree_level"] == u"硕士", "job_degree_level"] = 3
-df.loc[df["job_degree_level"] == u"博士", "job_degree_level"] = 3
 df.loc[df["job_degree_level"] == u"其他", "job_degree_level"] = 4
 df[["job_degree_level"]] = df[["job_degree_level"]].fillna(3)
 df.loc[df["job_exp"] == u"实习生", "job_exp"] = 0
@@ -246,20 +227,16 @@ df.loc[df["job_exp"] == u"5年以上", "job_exp"] = 60
 df.loc[df["job_exp"] == u"8年以上", "job_exp"] = 96
 df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
-df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]           
+predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
+              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]
 output = open("D:/luheng/mypython/truedata.pkl", 'wb')
 pickle.dump(df, output)
-print u"成功写入pkl"
-predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]   
-# for x in df["job_degree_level"].unique():
-#     print x
-x = df[predictors]
-y = df["status"]
-# kbest = SelectKBest(f_classif, k=10).fit(x, y)
-# x = kbest.transform(x)
-# print kbest.get_support()
-# print kbest.scores_
+x = df[predictors].astype(float)
+y = df["status"].astype(int)
+kbest = SelectKBest(f_classif, k=10).fit(x, y)
+x = kbest.transform(x)
+print kbest.get_support()
+print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
@@ -286,29 +263,31 @@ print clf.score(x_test, y_test)
 # df2=df[["latest_workexp_job_spec","latest_workexp_job_position","workexp","projectexp"]]
 # df3=df[["industry","position"]]
 # df3.to_csv("D:/luheng/mypython/HR.txt",index=False,header=False)
-# # 画学习曲线图
-# train_sizes = np.linspace(0.1, 1.0, 20)
-# train_sizes, train_scores, test_scores = learning_curve(
-#     clf, x, y, train_sizes=train_sizes)
-# train_scores_mean = np.mean(train_scores, axis=1)
-# train_scores_std = np.std(train_scores, axis=1)
-# test_scores_mean = np.mean(test_scores, axis=1)
-# test_scores_std = np.std(test_scores, axis=1)
-# plt.title("Learning Curve with Tree")
-# plt.xlabel("Training examples")
-# plt.ylabel("Score")
-# plt.ylim(0.0, 1.1)
-# plt.grid()
-# plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-#                  train_scores_mean + train_scores_std, alpha=0.1,
-#                  color="r")
-# plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-#                  test_scores_mean + test_scores_std, alpha=0.1, color="g")
-# plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-#          label="Training score")
-# plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-#          label="Cross-validation score")
-# plt.legend(loc="best")
-# plt.show()
+# 画学习曲线图
+train_sizes = np.linspace(0.1, 1.0, 20)
+train_sizes, train_scores, test_scores = learning_curve(
+    clf, x, y, train_sizes=train_sizes)
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+plt.title("Learning Curve with Tree")
+plt.xlabel("Training examples")
+plt.ylabel("Score")
+plt.ylim(0.0, 1.1)
+plt.grid()
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                 train_scores_mean + train_scores_std, alpha=0.1,
+                 color="r")
+plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
+plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+         label="Training score")
+plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+         label="Cross-validation score")
+plt.legend(loc="best")
+plt.show()
+
+
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

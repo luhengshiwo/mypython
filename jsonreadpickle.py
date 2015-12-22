@@ -33,31 +33,35 @@ sys.setdefaultencoding('utf-8')
 # import pydot
 begin = time.time()
 predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]
+              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]   
 pickle_file = open("D:/luheng/mypython/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
+# df = df[(df["status"]!=2)]
 # df3=df[["position","expect_position"]]
 # print df3
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-df1=df[["status","position","expect_position","salary_type","expect_salary"]]
+# df = df[["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
+#               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","status"]]
+# print df.describe()
+# df1=df[(df["status"]==1)]
 # print df1
-df1.to_csv("D:/luheng/mypython/mylook.csv",index=False,header=False)
-
-x = df[predictors].astype(float)
-y = df["status"].astype(int)
+# df.to_csv("D:/luheng/mypython/mylook3.csv",index=False,header=True)
+# df1.to_csv("D:/luheng/mypython/mylook2.csv",index=False,header=True)
+x = df[predictors]
+y = df["status"]
 # kbest=SelectKBest(f_classif, k=4).fit(x,y)
 # x=kbest.transform(x)
 # print  kbest.get_support()
 # print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
-# clf=ensemble.RandomForestClassifier(n_estimators=10)
+clf=ensemble.RandomForestClassifier(n_estimators=10)
 # clf = svm.SVC()
 # clf=linear_model.LogisticRegression()
-clf = tree.DecisionTreeClassifier()
-print clf
+# clf = tree.DecisionTreeClassifier()
+# print clf
 # clf = tree.ExtraTreeClassifier()
 # clf=naive_bayes.GaussianNB()
 # clf=ensemble.AdaBoostClassifier()
@@ -65,21 +69,31 @@ print clf
 # scores = cross_validation.cross_val_score(clf,x,y,cv=10)
 # print scores
 clf.fit(x_train, y_train)
+a=0
+b=0
+for t in y:
+    if t == 0 :
+        a+=1
+    elif t ==1 :
+        b+=1	
+print u"负样本个数：%s" %a
+print u"正样本个数：%s" %b	    
 # print clf.feature_importances_
 # print x_train
-# print y_train
 print u"训练集得分：%.4fs" % clf.score(x_train, y_train)
 # 准确率
 # accuracy_score和clf.score一样，f1是precision和recall的几何平均
 print u"测试集得分：%.4fs" % clf.score(x_test, y_test)
 pred = clf.predict(x_test)
 # m_f1=metrics.f1_score(y_test,pred)
-m_precision = metrics.precision_score(y_test, pred)
-m_recall = metrics.recall_score(y_test, pred)
+# m_precision = metrics.precision_score(y_test, pred)
+# m_recall = metrics.recall_score(y_test, pred)
 # print metrics.accuracy_score(y_test,pred)
 # print m_f1
-print u"准确率：%.4fs" % m_precision
-print u"召回率：%.4fs" % m_recall
+precision,recall,thresholds=metrics.precision_recall_curve(y_test,pred)
+print precision,recall,thresholds
+# print u"准确率：%.4fs" % m_precision
+# print u"召回率：%.4fs" % m_recall
 # 画决策树图
 # dot_data = StringIO()
 # tree.export_graphviz(clf,out_file=dot_data)
@@ -94,27 +108,28 @@ print u"召回率：%.4fs" % m_recall
 # df3=df[["industry","position"]]
 # df3.to_csv("D:/luheng/mypython/HR.txt",index=False,header=False)
 # 画学习曲线图
-# train_sizes=np.linspace(0.1, 1.0, 20)
-# train_sizes,train_scores,test_scores=learning_curve(clf,x,y,train_sizes=train_sizes)
-# train_scores_mean = np.mean(train_scores, axis=1)
-# train_scores_std = np.std(train_scores, axis=1)
-# test_scores_mean = np.mean(test_scores, axis=1)
-# test_scores_std = np.std(test_scores, axis=1)
-# plt.title("Learning Curve with Tree")
-# plt.xlabel("Training examples")
-# plt.ylabel("Score")
-# plt.ylim(0.0, 1.1)
-# plt.grid()
-# plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-#                  train_scores_mean + train_scores_std, alpha=0.1,
-#                  color="r")
-# plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-#                  test_scores_mean + test_scores_std, alpha=0.1, color="g")
-# plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-#          label="Training score")
-# plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-#          label="Cross-validation score")
-# plt.legend(loc="best")
-# plt.show()
+train_sizes = np.linspace(0.1, 1.0, 20)
+train_sizes, train_scores, test_scores = learning_curve(
+    clf, x, y, train_sizes=train_sizes)
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+plt.title("Learning Curve with Tree")
+plt.xlabel("Training examples")
+plt.ylabel("Score")
+plt.ylim(0.0, 1.1)
+plt.grid()
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                 train_scores_mean + train_scores_std, alpha=0.1,
+                 color="r")
+plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                 test_scores_mean + test_scores_std, alpha=0.1, color="g")
+plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+         label="Training score")
+plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+         label="Cross-validation score")
+plt.legend(loc="best")
+plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)
