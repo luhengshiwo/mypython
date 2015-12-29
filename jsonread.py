@@ -34,8 +34,9 @@ sys.setdefaultencoding('utf-8')
 begin = time.time()
 source = "D:/luheng/mypython/parsedata"
 corpus = []
-status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim = [
-], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim,hrjob1,hrjob2,peoplejob1,peoplejob2 = [
+], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[]
+hrjob1,hrjob2,peoplejob1,peoplejob2,simi=[],[],[],[],[]
 for root, dirs, files in os.walk(source):
     for OneFileName in files:
         if OneFileName.find('.txt') == -1:
@@ -43,7 +44,7 @@ for root, dirs, files in os.walk(source):
         OneFullFileName = join(root, OneFileName)
         myfile = open(OneFullFileName)
         for line in myfile:
-            data = json.loads(line)
+            data = json.loads(line,strict=False)
             for key in data:
                 status_id.append(data[key]["status_id"])
                 status_title.append(data[key]["status_title"])
@@ -141,11 +142,60 @@ for root, dirs, files in os.walk(source):
                 #     comp.append(1)
                 # else :
                 #     comp.append(0)         
-        myfile.close()   
+        myfile.close() 
+myfilehr = open("D:/luheng/mypython/myhr.txt",'r') 
+for line in myfilehr:
+    index1 = line.find("\t")
+    if index1!=0:
+        job1=line[2:index1-1]
+        hrjob1.append(job1.decode("utf-8"))
+        index2 = line.find("\t",index1+1)
+        job2=line[index1+2:index2-1]
+        hrjob2.append(job2.decode("utf-8"))
+    else: 
+        hrjob1.append("dosomething")    
+        hrjob2.append("dosomething")
+myfilehr.close()
+myfilepeople = open("D:/luheng/mypython/mypeople.txt",'r') 
+for line in myfilepeople:
+    index1 = line.find("\t")
+    if index1!=0:
+        job1=line[2:index1-1]
+        peoplejob1.append(job1.decode("utf-8"))
+        index2 = line.find("\t",index1+1)
+        job2=line[index1+2:index2-1]
+        peoplejob2.append(job2.decode("utf-8"))
+    else: 
+        peoplejob1.append("dosomething")    
+        peoplejob2.append("dosomething")        
+myfilehr.close()      
+wanghuifile = open("D:/luheng/mypython/toluheng2.txt",'r') 
+for line in wanghuifile:
+    if line=="数据不全\n":
+        simi.append(-1)
+    elif line=="文本无意义\n":    
+        simi.append(-1)
+    else :
+        index = line.find("\n")
+        score = line[0:index]
+        simi.append(float(score))  
+wanghuifile.close()                 
 df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary,
-                   latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location]).T
+                   latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location,hrjob1,hrjob2,peoplejob1,peoplejob2,simi]).T
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
-                        18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location"})
+                        18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location",35:"hrjob1",36:"hrjob2",37:"peoplejob1",38:"peoplejob2",39:"simi"})
+# df["my"]=2.718281828459 
+# dfwanghui=df[["status","workexp","projectexp","my","long_desc"]]
+# print dfwanghui
+# dfwanghui.to_csv("D:/luheng/mypython/towanghui.txt",index=False,header=False)
+# print u"给王会的文件写入成功！"
+# dfchenge=df[["industry","position","long_desc"]]
+# print dfchenge
+# dfchenge.to_csv("D:/luheng/mypython/myhrbf.txt",index=False,header=False)
+# dfchenge=df[["latest_workexp_job_industry","latest_workexp_job_spec","latest_workexp_job_position","workexp","projectexp"]]
+# print dfchenge
+# dfchenge.to_csv("D:/luheng/mypython/mypeoplebf.txt",index=False,header=False)
+# print u"给陈戈的文件写入成功！"
 # i=0
 # for x in df["status_title"]:
 # 	if x == u"面试不合格":
@@ -177,6 +227,34 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # 筛选待定=365
 # 辞退=29
 # 需再联系=35
+df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
+df.loc[df["status_title"] == u"面试不合格", "status"] = 1
+df.loc[df["status_title"] == u"已面试", "status"] = 1
+df.loc[df["status_title"] == u"面试取消", "status"] = 2
+df.loc[df["status_title"] == u"已发offer", "status"] = 1
+df.loc[df["status_title"] == u"试用期", "status"] = 1
+df.loc[df["status_title"] == u"离职", "status"] = 1
+df.loc[df["status_title"] == u"筛选合格", "status"] = 1
+df.loc[df["status_title"] == u"缺席", "status"] = 1
+df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
+df.loc[df["status_title"] == u"复试", "status"] = 1
+df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
+df.loc[df["status_title"] == u"将面试", "status"] = 1
+df.loc[df["status_title"] == u"接受offer", "status"] = 1
+df.loc[df["status_title"] == u"面试合格", "status"] = 1
+df.loc[df["status_title"] == u"已通知落选", "status"] = 1
+df.loc[df["status_title"] == u"转正", "status"] = 1
+df.loc[df["status_title"] == u"筛选待定", "status"] = 2
+df.loc[df["status_title"] == u"辞退", "status"] = 1
+df.loc[df["status_title"] == u"需再联系", "status"] = 2
+# df["my"]=2.718281828459 
+# dfwanghui=df[["status","workexp","projectexp","my","long_desc"]]
+# print dfwanghui
+# dfwanghui.to_csv("D:/luheng/mypython/towanghui.txt",index=False,header=False)
+# print u"给王会的文件写入成功！"
+# df1=df[["status"]]
+# print df["comp"].describe()
+# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 # df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
 # df.loc[df["status_title"] == u"面试不合格", "status"] = 0
 # df.loc[df["status_title"] == u"已面试", "status"] = 2
@@ -197,11 +275,6 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # df.loc[df["status_title"] == u"筛选待定", "status"] = 2
 # df.loc[df["status_title"] == u"辞退", "status"] = 1
 # df.loc[df["status_title"] == u"需再联系", "status"] = 2
-df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
-df.loc[df["status_title"] != u"筛选不合格", "status"] = 1
-# df1=df[["status"]]
-# print df["comp"].describe()
-# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 df.loc[df["sex"] == u"M", "sex"] = 0
 df.loc[df["sex"] == u"F", "sex"] = 1
 df["sex"] = df["sex"].fillna(0)
@@ -219,8 +292,8 @@ df.loc[df["degree_level"] == u"高中", "degree_level"] = 0
 df.loc[df["degree_level"] == "", "degree_level"] = 1
 df.loc[df["degree_level"] == u"本科", "degree_level"] = 2
 df.loc[df["degree_level"] == u"硕士", "degree_level"] = 3
-df.loc[df["degree_level"] == u"博士", "degree_level"] = 3
-df.loc[df["degree_level"] == u"博士后", "degree_level"] = 3
+df.loc[df["degree_level"] == u"博士", "degree_level"] = 4
+df.loc[df["degree_level"] == u"博士后", "degree_level"] = 4
 df.loc[df["degree_level"] == u"MBA", "degree_level"] = 3
 df["degree_level"] = df["degree_level"].fillna(1)
 df["latest_workexp_job_salary"] = df["latest_workexp_job_salary"].fillna("0")
@@ -233,8 +306,8 @@ df.loc[df["job_degree_level"] == u"中专", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"高中", "job_degree_level"] = 0
 df.loc[df["job_degree_level"] == u"本科", "job_degree_level"] = 2
 df.loc[df["job_degree_level"] == u"硕士", "job_degree_level"] = 3
-df.loc[df["job_degree_level"] == u"博士", "job_degree_level"] = 3
-df.loc[df["job_degree_level"] == u"其他", "job_degree_level"] = 4
+df.loc[df["job_degree_level"] == u"博士", "job_degree_level"] = 4
+df.loc[df["job_degree_level"] == u"其他", "job_degree_level"] = 1
 df[["job_degree_level"]] = df[["job_degree_level"]].fillna(3)
 df.loc[df["job_exp"] == u"实习生", "job_exp"] = 0
 df.loc[df["job_exp"] == u"应届毕业生", "job_exp"] = -1
@@ -246,34 +319,37 @@ df.loc[df["job_exp"] == u"5年以上", "job_exp"] = 60
 df.loc[df["job_exp"] == u"8年以上", "job_exp"] = 96
 df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
-df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]           
+df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]
+df = df[(df["status"]!=2)]           
 output = open("D:/luheng/mypython/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
-predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location"]   
-# for x in df["job_degree_level"].unique():
-#     print x
-x = df[predictors]
-y = df["status"]
-# kbest = SelectKBest(f_classif, k=10).fit(x, y)
-# x = kbest.transform(x)
-# print kbest.get_support()
-# print kbest.scores_
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-    x, y, test_size=0.3, random_state=100)
-# clf=ensemble.RandomForestClassifier(n_estimators=10)
-# clf=svm.SVC(kernel="linear")
-# clf=linear_model.LogisticRegression()
-clf = tree.DecisionTreeClassifier()
-# scores = cross_validation.cross_val_score(clf,x,y,cv=10)
-# print scores
-clf.fit(x_train, y_train)
-# print x_train
-# print y_train
-print clf.score(x_train, y_train)
-print clf.score(x_test, y_test)
+# predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
+#               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary","simi" ,"location"]   
+# # for x in df["job_degree_level"].unique():
+# #     print x
+# x = df[predictors]
+# y = df["status"]
+# # kbest = SelectKBest(f_classif, k=10).fit(x, y)
+# # x = kbest.transform(x)
+# # print kbest.get_support()
+# # print kbest.scores_
+# x_train, x_test, y_train, y_test = cross_validation.train_test_split(
+#     x, y, test_size=0.3, random_state=100)
+# # clf=ensemble.RandomForestClassifier(n_estimators=10)
+# # clf=svm.SVC(kernel="linear")
+# # clf=linear_model.LogisticRegression()
+# clf = tree.DecisionTreeClassifier()
+# # scores = cross_validation.cross_val_score(clf,x,y,cv=10)
+# # print scores
+# clf.fit(x_train, y_train)
+# # print x_train
+# # print y_train
+# print clf.score(x_train, y_train)
+# print clf.score(x_test, y_test)
 # 画决策树图
+
+# tree.export_graphviz(clf,outfile = "D:/luheng/mypython/tree.dot")
 # dot_data = StringIO()
 # tree.export_graphviz(clf,out_file=dot_data)
 # graph=pydot.graph_from_dot_data(dot_data.getvalue())
