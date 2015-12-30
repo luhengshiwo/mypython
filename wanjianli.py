@@ -36,7 +36,7 @@ sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
               "degree", "salary1","job1","job2","simi","location","job"]                 
-pickle_file = open("D:/luheng/mypython/truedata.pkl", "rb")
+pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
 # df3=df[["position","expect_position"]]
@@ -215,8 +215,8 @@ mydf= df.join(y_true,how="outer")
 mydf=mydf[(mydf["predictors"]>=0)]
 mydf=mydf[["predictors","status","sex","age", "exp", "marriage", "school_level", "degree_level",
               "degree", "salary1","job1","job2","simi","location","status","workexp","projectexp","long_desc"]]
-mydf.to_csv("D:/luheng/mypython/job2distinguish.csv",index=False,header=True)
-df["hrjob1"].to_csv("D:/luheng/mypython/job.csv",index=False,header=True)
+mydf.to_csv("D:/luheng/mydata/job2distinguish.csv",index=False,header=True)
+df["hrjob1"].to_csv("D:/luheng/mydata/job.csv",index=False,header=True)
 # print len(mydf)
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

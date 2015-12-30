@@ -1,0 +1,6 @@
+The repository holds all datamining related work and packages we use. Please use a reasonable folder structure to store the project. 
+For example, for code-sharding, please consider to use below folders: 
+
+3rdparty: any thirparty packages 
+common: any in-house library 
+

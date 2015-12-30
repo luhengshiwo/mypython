@@ -34,7 +34,7 @@ begin = time.time()
 hrjob1,hrjob2,peoplejob1,peoplejob2=[],[],[],[]
 predictors = [ "sex","age", "workexp_months", "exp", "marriage", "school_level", "degree_level",
               "degree", "salary_type", "latest_workexp_job_salary", "salary1","salary2","job1","job2","simi","location"]   
-pickle_file = open("D:/luheng/mypython/truedata.pkl", "rb")
+pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
 # df3=df[["position","expect_position"]]

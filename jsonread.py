@@ -32,7 +32,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
-source = "D:/luheng/mypython/parsedata"
+source = "D:/luheng/mydata/parsedata"
 corpus = []
 status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim,hrjob1,hrjob2,peoplejob1,peoplejob2 = [
 ], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[]
@@ -143,7 +143,7 @@ for root, dirs, files in os.walk(source):
                 # else :
                 #     comp.append(0)         
         myfile.close() 
-myfilehr = open("D:/luheng/mypython/myhr.txt",'r') 
+myfilehr = open("D:/luheng/mydata/myhr.txt",'r') 
 for line in myfilehr:
     index1 = line.find("\t")
     if index1!=0:
@@ -156,7 +156,7 @@ for line in myfilehr:
         hrjob1.append("dosomething")    
         hrjob2.append("dosomething")
 myfilehr.close()
-myfilepeople = open("D:/luheng/mypython/mypeople.txt",'r') 
+myfilepeople = open("D:/luheng/mydata/mypeople.txt",'r') 
 for line in myfilepeople:
     index1 = line.find("\t")
     if index1!=0:
@@ -169,7 +169,7 @@ for line in myfilepeople:
         peoplejob1.append("dosomething")    
         peoplejob2.append("dosomething")        
 myfilehr.close()      
-wanghuifile = open("D:/luheng/mypython/toluheng0.7.txt",'r') 
+wanghuifile = open("D:/luheng/mydata/toluheng0.7.txt",'r') 
 for line in wanghuifile:
     if line=="数据不全\n":
         simi.append(-1)
@@ -321,7 +321,7 @@ df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
 df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]
 df = df[(df["status"]!=2)]           
-output = open("D:/luheng/mypython/truedata.pkl", 'wb')
+output = open("D:/luheng/mydata/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
 # predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
