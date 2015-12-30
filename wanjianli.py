@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn import neighbors
 from sklearn import grid_search
+import math
 # from sklearn.externals.six import StringIO
 # import pydot
 import sys
@@ -34,7 +35,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
-              "degree", "salary1","job1","job2","simi","location"]                 
+              "degree", "salary1","job1","job2","simi","location","job"]                 
 pickle_file = open("D:/luheng/mypython/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
@@ -60,19 +61,32 @@ print u"读入pkl成功，进行下一步"
 df = df[(df["peoplejob2"]!="dosomething")]
 df = df[(df["hrjob2"]!="dosomething")]
 df=df[(df["simi"]!=-1)]
-# df = df[(df["hrjob1"]=="计算机-互联网-通信-电子")]
-# df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 df.loc[df["hrjob1"] == df["peoplejob1"], "job1"] = 1
 df.loc[df["hrjob1"] != df["peoplejob1"], "job1"] = 0
 df.loc[df["hrjob2"] == df["peoplejob2"], "job2"] = 1
 df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2","status"]   
+              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2"]   
 df[change] = df[change].astype(int)
-df = df[(df["expect_salary"]<20000)]
+df["simi"]=df["simi"].dropna()
+# df = df[(df["hrjob1"]==u"计算机-互联网-通信-电子")]
+df.loc[(df["hrjob1"]==u"计算机-互联网-通信-电子"),"job"]=0
+df.loc[(df["hrjob1"]==u"人事-行政-高级管理"),"job"]=1
+df.loc[(df["hrjob1"]==u"会计-金融-银行-保险"),"job"]=2
+df.loc[(df["hrjob1"]==u"销售-客服-技术支持"),"job"]=3
+df.loc[(df["hrjob1"]==u"广告-市场-媒体-艺术"),"job"]=4
+df.loc[(df["hrjob1"]==u"建筑-房地产"),"job"]=5
+df.loc[(df["hrjob1"]==u"服务业"),"job"]=6
+df.loc[(df["hrjob1"]==u"公务员-翻译-其他"),"job"]=7
+df.loc[(df["hrjob1"]==u"生物-制药-医疗-护理"),"job"]=8
+df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
+df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
+print df["job"]
+#计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
+# df = df[(df["expect_salary"]<20000)]
 # df = df[(df["latest_workexp_job_salary"]<20000)]
-df = df[(df["salary_type"]<20000)]
-df = df[(df["expect_salary"]>1000)]
+# df = df[(df["salary_type"]<20000)]
+# df = df[(df["expect_salary"]>1000)]
 # df2 = df[(df["job2"]==0)&(df["status"]==1)&(df["job1"]==1)]
 # df3 = df[(df["job2"]==0)&(df["status"]==0)&(df["job1"]==1)]
 # df4 = df[(df["job2"]==1)&(df["status"]==0)]
@@ -98,9 +112,8 @@ df.loc[(df["job_degree_level"]==3)&((df["degree_level"]!=3)&(df["degree_level"]!
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]==4)),"degree"]=1
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
 df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
-df.loc[(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
-df.loc[(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
-print df
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
 # # print df.describe()
 # # df1=df[(df["status"]==1)]
 # # print df1
@@ -109,7 +122,7 @@ print df
 x = df[predictors]
 x=(x-x.mean())/x.std()
 y = df["status"]
-# kbest=SelectKBest(f_classif, k=12).fit(x,y)
+# kbest=SelectKBest(f_classif, k=10).fit(x,y)
 # x=kbest.transform(x)
 # print  kbest.get_support()
 # print kbest.scores_
@@ -117,10 +130,10 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
 # param={"kernel":("rbf","linear","poly","sigmoid")}
-clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
+# clf = svm.SVC(cache_size=1000,class_weight="balanced",C=1)
 # clf=grid_search.GridSearchCV(clf,param)
 # clf=linear_model.LogisticRegression()
-# clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
+clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
 # print clf
 # clf = tree.ExtraTreeClassifier()
 # clf=naive_bayes.GaussianNB()
@@ -194,14 +207,16 @@ print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
 # plt.legend(loc="best")
 # plt.show() 
 #############################################################输出分类，合并df
-# xy= x_test.join(y_test,how="outer")
-# y_true = pd.DataFrame([pred]).T
-# y_true = y_true.rename(columns={0:"predictors"})
-# y_true.index= xy.index
-# mydf= df.join(y_true,how="outer")
-# mydf=mydf[(mydf["predictors"]>=0)]
-# mydf=mydf[["predictors","status","simi","workexp","projectexp","long_desc"]]
-# mydf.to_csv("D:/luheng/mypython/distinguish.csv",index=False,header=True)
+xy= x_test.join(y_test,how="outer")
+y_true = pd.DataFrame([pred]).T
+y_true = y_true.rename(columns={0:"predictors"})
+y_true.index= xy.index
+mydf= df.join(y_true,how="outer")
+mydf=mydf[(mydf["predictors"]>=0)]
+mydf=mydf[["predictors","status","sex","age", "exp", "marriage", "school_level", "degree_level",
+              "degree", "salary1","job1","job2","simi","location","status","workexp","projectexp","long_desc"]]
+mydf.to_csv("D:/luheng/mypython/job2distinguish.csv",index=False,header=True)
+df["hrjob1"].to_csv("D:/luheng/mypython/job.csv",index=False,header=True)
 # print len(mydf)
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

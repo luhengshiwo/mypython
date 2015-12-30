@@ -68,6 +68,8 @@ df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2","simi","status"]   
 df[change] = df[change].astype(float)
+df = df[(df["hrjob1"]==u"生产-营运-采购-物流")]
+#计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 # df = df[(df["workexp_months"]<300)]
 # df = df[(df["expect_salary"]<20000)]
 # df = df[(df["latest_workexp_job_salary"]<20000)]
@@ -99,8 +101,8 @@ df.loc[(df["job_degree_level"]==3)&((df["degree_level"]!=3)&(df["degree_level"]!
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]==4)),"degree"]=1
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
 df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
-df.loc[(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
-df.loc[(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
 # df["degree"]=df["degree_level"]-df["job_degree_level"]
 
 # print df[["salary_type","latest_workexp_job_salary","expect_salary"]] #haha
@@ -134,8 +136,8 @@ df6=df4[stat]
 # plt.ylabel(u"是否通过筛选")
 # plt.title( "x-y" )
 # plt.show()
-df3["simi"].plot(kind='density')
-df4["simi"].plot(kind='density')
+# df3["simi"].plot(kind='density')
+df["simi"].plot(kind='density')
 plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)
