@@ -26,15 +26,15 @@ from sklearn.learning_curve import learning_curve
 import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn import neighbors
+from sklearn import grid_search
 # from sklearn.externals.six import StringIO
 # import pydot
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
-hrjob1,hrjob2,peoplejob1,peoplejob2=[],[],[],[]
-predictors = [ "sex","age", "workexp_months", "exp", "marriage", "school_level", "degree_level",
-              "degree", "salary_type", "latest_workexp_job_salary", "salary1","salary2","job1","job2","simi","location"]   
+predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
+              "degree", "salary1","job1","job2","simi","location"]                 
 pickle_file = open("D:/luheng/mypython/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
@@ -69,9 +69,8 @@ df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2","status"]   
 df[change] = df[change].astype(int)
-df = df[(df["workexp_months"]<300)]
 df = df[(df["expect_salary"]<20000)]
-df = df[(df["latest_workexp_job_salary"]<20000)]
+# df = df[(df["latest_workexp_job_salary"]<20000)]
 df = df[(df["salary_type"]<20000)]
 df = df[(df["expect_salary"]>1000)]
 # df2 = df[(df["job2"]==0)&(df["status"]==1)&(df["job1"]==1)]
@@ -83,20 +82,25 @@ df = df[(df["expect_salary"]>1000)]
 # print len(df3)
 # print len(df4)
 # print len(df5)
-df.loc[df["job_exp"] == 0, "job_exp"] = 1
-df["exp"] = (df["workexp_months"]-df["job_exp"])
-df["degree"]=df["degree_level"]-df["job_degree_level"]
-# print df[["salary_type","latest_workexp_job_salary","expect_salary"]] #haha
-# print df["latest_workexp_job_salary"].describe()
-# for salary in df["latest_workexp_job_salary"].unique():
-#     print salary
-
-df.loc[df["salary_type"] == 0, "salary_type"] = 5500
-df.loc[df["latest_workexp_job_salary"] == 0, "latest_workexp_job_salary"] = 1356
-df.loc[df["expect_salary"] == 0, "expect_salary"] = 5500
-df["salary1"]=df["salary_type"]-df["expect_salary"]
-df["salary2"]=df["latest_workexp_job_salary"]-df["expect_salary"]
-print len(df)
+df.loc[(df["job_exp"] == 0)&(df["workexp_months"] <= 0), "exp"] = 1
+df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1/df["workexp_months"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] <= 0), "exp"] = 1/df["job_exp"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]>=df["job_exp"] ), "exp"] = 1
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]<df["job_exp"] ), "exp"] = df["workexp_months"]/df["job_exp"]
+df.loc[(df["job_degree_level"]==0)&(df["degree_level"]==0),"degree"]=1
+df.loc[(df["job_degree_level"]==0)&(df["degree_level"]>0),"degree"]=0
+df.loc[(df["job_degree_level"]==1)&((df["degree_level"]==1)|(df["degree_level"]==2)),"degree"]=1
+df.loc[(df["job_degree_level"]==1)&((df["degree_level"]!=1)&(df["degree_level"]!=2)),"degree"]=0
+df.loc[(df["job_degree_level"]==2)&((df["degree_level"]==2)|(df["degree_level"]==3)),"degree"]=1
+df.loc[(df["job_degree_level"]==2)&((df["degree_level"]!=2)&(df["degree_level"]!=3)),"degree"]=0
+df.loc[(df["job_degree_level"]==3)&((df["degree_level"]==3)|(df["degree_level"]==4)),"degree"]=1
+df.loc[(df["job_degree_level"]==3)&((df["degree_level"]!=3)&(df["degree_level"]!=4)),"degree"]=0
+df.loc[(df["job_degree_level"]==4)&((df["degree_level"]==4)),"degree"]=1
+df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
+df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
+df.loc[(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
+df.loc[(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
+print df
 # # print df.describe()
 # # df1=df[(df["status"]==1)]
 # # print df1
@@ -105,14 +109,16 @@ print len(df)
 x = df[predictors]
 x=(x-x.mean())/x.std()
 y = df["status"]
-kbest=SelectKBest(f_classif, k=12).fit(x,y)
-x=kbest.transform(x)
-print  kbest.get_support()
-print kbest.scores_
+# kbest=SelectKBest(f_classif, k=12).fit(x,y)
+# x=kbest.transform(x)
+# print  kbest.get_support()
+# print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
-clf=ensemble.RandomForestClassifier(n_estimators=10)
-# clf = svm.SVC()
+# clf=ensemble.RandomForestClassifier(n_estimators=10)
+# param={"kernel":("rbf","linear","poly","sigmoid")}
+clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
+# clf=grid_search.GridSearchCV(clf,param)
 # clf=linear_model.LogisticRegression()
 # clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
 # print clf
@@ -123,6 +129,8 @@ clf=ensemble.RandomForestClassifier(n_estimators=10)
 # scores = cross_validation.cross_val_score(clf,x,y,cv=10)
 # print scores
 clf.fit(x_train, y_train)
+print clf
+# print clf.best_params_
 a=0
 b=0
 for t in y_train:
@@ -150,6 +158,9 @@ for t2 in pred:
     elif t2 ==1 :
         f+=1 
 precision,recall,thresholds=metrics.precision_recall_curve(y_test,pred)
+# print precision
+# print recall
+# print e,f
 x1,x2,x3=precision
 y1,y2,y3=recall
 print u"测试集得分明细如下："
@@ -158,6 +169,39 @@ print u"正样本个数：%s,预测为正样本的个数：%s,其中预测准确
 print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
 # tree.export_graphviz(clf,out_file = "D:/luheng/mypython/tree.dot")
 # with open("D:/luheng/mypython/tree.dot", 'w') as f:
-#     f = tree.export_graphviz(clf, out_file=f)  
+#     f = tree.export_graphviz(clf, out_file=f) 
+# train_sizes = np.linspace(0.1, 1.0, 20)
+# train_sizes, train_scores, test_scores = learning_curve(
+#     clf, x, y, train_sizes=train_sizes)
+# train_scores_mean = np.mean(train_scores, axis=1)
+# train_scores_std = np.std(train_scores, axis=1)
+# test_scores_mean = np.mean(test_scores, axis=1)
+# test_scores_std = np.std(test_scores, axis=1)
+# plt.title("Learning Curve with Tree")
+# plt.xlabel("Training examples")
+# plt.ylabel("Score")
+# plt.ylim(0.0, 1.1)
+# plt.grid()
+# plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+#                  train_scores_mean + train_scores_std, alpha=0.1,
+#                  color="r")
+# plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+#                  test_scores_mean + test_scores_std, alpha=0.1, color="g")
+# plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+#          label="Training score")
+# plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+#          label="Cross-validation score")
+# plt.legend(loc="best")
+# plt.show() 
+#############################################################输出分类，合并df
+# xy= x_test.join(y_test,how="outer")
+# y_true = pd.DataFrame([pred]).T
+# y_true = y_true.rename(columns={0:"predictors"})
+# y_true.index= xy.index
+# mydf= df.join(y_true,how="outer")
+# mydf=mydf[(mydf["predictors"]>=0)]
+# mydf=mydf[["predictors","status","simi","workexp","projectexp","long_desc"]]
+# mydf.to_csv("D:/luheng/mypython/distinguish.csv",index=False,header=True)
+# print len(mydf)
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

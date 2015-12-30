@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn import neighbors
 import sys
+from scipy.stats import gaussian_kde
 reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
@@ -67,10 +68,11 @@ df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2","simi","status"]   
 df[change] = df[change].astype(float)
-df = df[(df["workexp_months"]<300)]
-df = df[(df["expect_salary"]<20000)]
-df = df[(df["latest_workexp_job_salary"]<20000)]
-df = df[(df["salary_type"]<20000)]
+# df = df[(df["workexp_months"]<300)]
+# df = df[(df["expect_salary"]<20000)]
+# df = df[(df["latest_workexp_job_salary"]<20000)]
+# df = df[(df["salary_type"]<20000)]
+# df = df[(df["workexp_months"]>0)]
 # df = df[(df["expect_salary"]>1000)]
 # df2 = df[(df["job2"]==0)&(df["status"]==1)&(df["job1"]==1)]
 # df3 = df[(df["job2"]==0)&(df["status"]==0)&(df["job1"]==1)]
@@ -81,9 +83,25 @@ df = df[(df["salary_type"]<20000)]
 # print len(df3)
 # print len(df4)
 # print len(df5)
-df.loc[df["job_exp"] == 0, "job_exp"] = 1
-df["exp"] = (df["workexp_months"]-df["job_exp"])
-df["degree"]=df["degree_level"]-df["job_degree_level"]
+df.loc[(df["job_exp"] == 0)&(df["workexp_months"] <= 0), "exp"] = 1
+df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1/df["workexp_months"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] <= 0), "exp"] = 1/df["job_exp"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]>=df["job_exp"] ), "exp"] = 1
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]<df["job_exp"] ), "exp"] = df["workexp_months"]/df["job_exp"]
+df.loc[(df["job_degree_level"]==0)&(df["degree_level"]==0),"degree"]=1
+df.loc[(df["job_degree_level"]==0)&(df["degree_level"]>0),"degree"]=0
+df.loc[(df["job_degree_level"]==1)&((df["degree_level"]==1)|(df["degree_level"]==2)),"degree"]=1
+df.loc[(df["job_degree_level"]==1)&((df["degree_level"]!=1)&(df["degree_level"]!=2)),"degree"]=0
+df.loc[(df["job_degree_level"]==2)&((df["degree_level"]==2)|(df["degree_level"]==3)),"degree"]=1
+df.loc[(df["job_degree_level"]==2)&((df["degree_level"]!=2)&(df["degree_level"]!=3)),"degree"]=0
+df.loc[(df["job_degree_level"]==3)&((df["degree_level"]==3)|(df["degree_level"]==4)),"degree"]=1
+df.loc[(df["job_degree_level"]==3)&((df["degree_level"]!=3)&(df["degree_level"]!=4)),"degree"]=0
+df.loc[(df["job_degree_level"]==4)&((df["degree_level"]==4)),"degree"]=1
+df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
+df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
+df.loc[(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
+df.loc[(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
+# df["degree"]=df["degree_level"]-df["job_degree_level"]
 
 # print df[["salary_type","latest_workexp_job_salary","expect_salary"]] #haha
 # print df["latest_workexp_job_salary"].describe()
@@ -93,9 +111,10 @@ df["degree"]=df["degree_level"]-df["job_degree_level"]
 df.loc[df["salary_type"] == 0, "salary_type"] = 5500  
 df.loc[df["latest_workexp_job_salary"] == 0, "latest_workexp_job_salary"] = 1356
 df.loc[df["expect_salary"] == 0, "expect_salary"] = 5500
-df["salary1"]=df["salary_type"]-df["expect_salary"]
+# df["salary1"]=df["salary_type"]-df["expect_salary"]
 df["salary2"]=df["latest_workexp_job_salary"]-df["expect_salary"]
-print len(df)
+predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
+              "degree", "salary1","job1","job2","simi","location"]            
 stat=["simi"]
 df2 = df[["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level","job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","simi","status"]]
 df3 = df[(df["status"]==0)]
@@ -103,5 +122,20 @@ print df3[stat].describe()
 df4 = df[(df["status"]==1)]
 print df4[stat].describe()
 print df[stat].describe()
+df5=df3[stat]
+df6=df4[stat]
+# N=688
+# colors = np.random.rand(N)
+# area = np.pi * (np.random.rand(N)*10 )**2 
+# plt.scatter(df["simi"],df["status"])
+# plt.xlim(-0.1,1.1)
+# plt.ylim(-0.1,1.1)
+# plt.xlabel(u"相似度")
+# plt.ylabel(u"是否通过筛选")
+# plt.title( "x-y" )
+# plt.show()
+df3["simi"].plot(kind='density')
+df4["simi"].plot(kind='density')
+plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

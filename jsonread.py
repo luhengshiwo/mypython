@@ -169,7 +169,7 @@ for line in myfilepeople:
         peoplejob1.append("dosomething")    
         peoplejob2.append("dosomething")        
 myfilehr.close()      
-wanghuifile = open("D:/luheng/mypython/toluheng2.txt",'r') 
+wanghuifile = open("D:/luheng/mypython/toluheng0.7.txt",'r') 
 for line in wanghuifile:
     if line=="数据不全\n":
         simi.append(-1)
@@ -310,7 +310,7 @@ df.loc[df["job_degree_level"] == u"博士", "job_degree_level"] = 4
 df.loc[df["job_degree_level"] == u"其他", "job_degree_level"] = 1
 df[["job_degree_level"]] = df[["job_degree_level"]].fillna(3)
 df.loc[df["job_exp"] == u"实习生", "job_exp"] = 0
-df.loc[df["job_exp"] == u"应届毕业生", "job_exp"] = -1
+df.loc[df["job_exp"] == u"应届毕业生", "job_exp"] = 0
 df.loc[df["job_exp"] == u"学生兼职/假期工", "job_exp"] = 0
 df.loc[df["job_exp"] == u"1年以上", "job_exp"] = 12
 df.loc[df["job_exp"] == u"2年以上", "job_exp"] = 24
