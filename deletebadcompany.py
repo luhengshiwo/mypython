@@ -44,25 +44,22 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-print len(df["com"])
+print len(df)
 print len(df["com"].unique())
-thre = 0.9
 for company in df["com"].unique():
     mycom = df[(df["com"]==company)]
     passnum = mycom[(mycom["status"]==1)]
     failurenum =  mycom[(mycom["status"]==0)]
+    notknownum =mycom[(mycom["status"]==2)]
     if len(mycom)<5:
         df.loc[df["com"]==company,"comstatus"]=1
-    else:
-        if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
-            df.loc[df["com"]==company,"comstatus"]=0
-        else :
-            df.loc[df["com"]==company,"comstatus"]=1
-    df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
-# df = df[(df["comstatus"]==1)] 
-df.to_csv("D:/luheng/mydata/findcomdelete.csv",index=False,header=True)
+    elif (len(passnum)/len(mycom)>0.9) or (len(failurenum)/len(mycom)>0.9) or (len(notknownum)/len(mycom)>0.9):
+        df.loc[df["com"]==company,"comstatus"]=0
+    else :
+        df.loc[df["com"]==company,"comstatus"]=1 
+df = df[(df["comstatus"]==1)] 
 print len(df)
-print len(df["com"].unique())
+print len(df["com"].unique())        
 # print df
 # df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 # df["my"]=2.718281828459 
@@ -80,6 +77,7 @@ print len(df["com"].unique())
 df = df[(df["peoplejob2"]!="dosomething")]
 df = df[(df["hrjob2"]!="dosomething")]
 df=df[(df["simi"]!=-1)]
+print len(df)
 df.loc[df["hrjob1"] == df["peoplejob1"], "job1"] = 1
 df.loc[df["hrjob1"] != df["peoplejob1"], "job1"] = 0
 df.loc[df["hrjob2"] == df["peoplejob2"], "job2"] = 1
@@ -88,6 +86,7 @@ change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", 
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2"]   
 df[change] = df[change].astype(int)
 df["simi"]=df["simi"].dropna()
+print len(df)
 # df = df[(df["hrjob1"]==u"计算机-互联网-通信-电子")]
 df.loc[(df["hrjob1"]==u"计算机-互联网-通信-电子"),"job"]=0
 df.loc[(df["hrjob1"]==u"人事-行政-高级管理"),"job"]=1
@@ -133,72 +132,75 @@ df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
 df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
 df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
 df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
+print len(df)
+print len(df["com"].unique())
+df.to_csv("D:/luheng/mydata/findcomdelete.csv",index=False,header=True)
 # # print df.describe()
 # # df1=df[(df["status"]==1)]
 # # print df1
 # # df.to_csv("D:/luheng/mypython/mylook3.csv",index=False,header=True)
 # # df1.to_csv("D:/luheng/mypython/mylook2.csv",index=False,header=True)
-x = df[predictors]
-x=(x-x.mean())/x.std()
-y = df["status"]
-# kbest=SelectKBest(f_classif, k=10).fit(x,y)
-# x=kbest.transform(x)
-# print  kbest.get_support()
-# print kbest.scores_
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-    x, y, test_size=0.3, random_state=100)
+# x = df[predictors]
+# x=(x-x.mean())/x.std()
+# y = df["status"]
+# # kbest=SelectKBest(f_classif, k=10).fit(x,y)
+# # x=kbest.transform(x)
+# # print  kbest.get_support()
+# # print kbest.scores_
+# x_train, x_test, y_train, y_test = cross_validation.train_test_split(
+#     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
-# param={"kernel":("rbf","linear","poly","sigmoid")}
-clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
-# clf=grid_search.GridSearchCV(clf,param)
-# clf=linear_model.LogisticRegression()
-# clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
+# # param={"kernel":("rbf","linear","poly","sigmoid")}
+# # clf = svm.SVC(cache_size=1000,class_weight="balanced",C=1)
+# # clf=grid_search.GridSearchCV(clf,param)
+# # clf=linear_model.LogisticRegression()
+# # clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
+# # print clf
+# # clf = tree.ExtraTreeClassifier()
+# # clf=naive_bayes.GaussianNB()
+# # clf=ensemble.AdaBoostClassifier()
+# # clf=ensemble.GradientBoostingClassifier()
+# # scores = cross_validation.cross_val_score(clf,x,y,cv=10)
+# # print scores
+# clf.fit(x_train, y_train)
 # print clf
-# clf = tree.ExtraTreeClassifier()
-# clf=naive_bayes.GaussianNB()
-# clf=ensemble.AdaBoostClassifier()
-# clf=ensemble.GradientBoostingClassifier()
-# scores = cross_validation.cross_val_score(clf,x,y,cv=10)
-# print scores
-clf.fit(x_train, y_train)
-print clf
-# print clf.best_params_
-a=0
-b=0
-for t in y_train:
-    if t == 0 :
-        a+=1
-    elif t ==1 :
-        b+=1	
-c=0   
-d=0
-for t2 in y_test:
-    if t2 == 0 :
-        c+=1
-    elif t2 ==1 :
-        d+=1    
-print u"训练集样本总数：%s,训练集得分：%.4fs" %(len(y_train),clf.score(x_train, y_train))
-# 准确率
-# accuracy_score和clf.score一样，f1是precision和recall的几何平均
-print u"测试集样本总数：%s,测试集得分：%.4fs" %(len(y_test),clf.score(x_test, y_test))
-pred = clf.predict(x_test)
-e=0
-f=0
-for t2 in pred:
-    if t2 == 0 :
-        e+=1
-    elif t2 ==1 :
-        f+=1 
-precision,recall,thresholds=metrics.precision_recall_curve(y_test,pred)
-# print precision
-# print recall
-# print e,f
-x1,x2,x3=precision
-y1,y2,y3=recall
-print u"测试集得分明细如下："
-print u"负样本个数：%s,预测为负样本的个数：%s,其中预测准确个数: %s" %(c,e,int(e-d+d*y2))
-print u"正样本个数：%s,预测为正样本的个数：%s,其中预测准确个数: %s" %(d,f,int(d*y2))  
-print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
+# # print clf.best_params_
+# a=0
+# b=0
+# for t in y_train:
+#     if t == 0 :
+#         a+=1
+#     elif t ==1 :
+#         b+=1	
+# c=0   
+# d=0
+# for t2 in y_test:
+#     if t2 == 0 :
+#         c+=1
+#     elif t2 ==1 :
+#         d+=1    
+# print u"训练集样本总数：%s,训练集得分：%.4fs" %(len(y_train),clf.score(x_train, y_train))
+# # 准确率
+# # accuracy_score和clf.score一样，f1是precision和recall的几何平均
+# print u"测试集样本总数：%s,测试集得分：%.4fs" %(len(y_test),clf.score(x_test, y_test))
+# pred = clf.predict(x_test)
+# e=0
+# f=0
+# for t2 in pred:
+#     if t2 == 0 :
+#         e+=1
+#     elif t2 ==1 :
+#         f+=1 
+# precision,recall,thresholds=metrics.precision_recall_curve(y_test,pred)
+# # print precision
+# # print recall
+# # print e,f
+# x1,x2,x3=precision
+# y1,y2,y3=recall
+# print u"测试集得分明细如下："
+# print u"负样本个数：%s,预测为负样本的个数：%s,其中预测准确个数: %s" %(c,e,int(e-d+d*y2))
+# print u"正样本个数：%s,预测为正样本的个数：%s,其中预测准确个数: %s" %(d,f,int(d*y2))  
+# print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
 # tree.export_graphviz(clf,out_file = "D:/luheng/mypython/tree.dot")
 # with open("D:/luheng/mypython/tree.dot", 'w') as f:
 #     f = tree.export_graphviz(clf, out_file=f) 

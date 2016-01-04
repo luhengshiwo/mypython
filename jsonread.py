@@ -47,7 +47,19 @@ for root, dirs, files in os.walk(source):
             data = json.loads(line,strict=False)
             for key in data:
                 myid.append(data[key]["id"])
-                com.append(data[key]["comp_name"])
+                if data[key]["comp_name"] == None:
+                    com.append(-1)
+                elif "test" in data[key]["comp_name"]:
+                    com.append(-1)
+                elif  "Test" in data[key]["comp_name"]:
+                    com.append(-1) 
+                elif  "pipipi" in data[key]["comp_name"]:
+                    com.append(-1)     
+                elif  "淘贝贝" in data[key]["comp_name"]:
+                    print -1
+                    com.append(-1)        
+                else:    
+                    com.append(data[key]["comp_name"])
                 status_id.append(data[key]["status_id"])
                 status_title.append(data[key]["status_title"])
                 name.append(data[key]["name"])
@@ -322,11 +334,14 @@ df.loc[df["job_exp"] == u"8年以上", "job_exp"] = 96
 df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
 df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]
-df = df[(df["status"]!=2)]           
+# df = df[(df["status"]!=2)]   
+df = df[(df["com"]!=-1)]
+print len(df)      
+df = df.drop_duplicates(["name","com"])  
 output = open("D:/luheng/mydata/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
-print len(df["com"])
+print len(df)
 print len(df["com"].unique())
 df.to_csv("D:/luheng/mydata/findcom.csv",index=False,header=True)
 # predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
