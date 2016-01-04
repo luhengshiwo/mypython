@@ -35,7 +35,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
-              "degree", "salary1","job1","job2","simi","location","job"]                 
+              "degree", "salary1","job1","job2","simi","location"]                 
 pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
@@ -44,6 +44,8 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
+print len(df["com"])
+print len(df["com"].unique())
 # print df
 # df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 # df["my"]=2.718281828459 
@@ -81,7 +83,7 @@ df.loc[(df["hrjob1"]==u"公务员-翻译-其他"),"job"]=7
 df.loc[(df["hrjob1"]==u"生物-制药-医疗-护理"),"job"]=8
 df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
 df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
-print df["job"]
+df = df[(df["job"]==0)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 # df = df[(df["expect_salary"]<20000)]
 # df = df[(df["latest_workexp_job_salary"]<20000)]

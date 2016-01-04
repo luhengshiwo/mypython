@@ -34,8 +34,8 @@ sys.setdefaultencoding('utf-8')
 begin = time.time()
 source = "D:/luheng/mydata/parsedata"
 corpus = []
-status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim,hrjob1,hrjob2,peoplejob1,peoplejob2 = [
-], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[]
+status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim,hrjob1,hrjob2,peoplejob1,peoplejob2 ,com,myid,comsource= [
+], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[],[],[],[]
 hrjob1,hrjob2,peoplejob1,peoplejob2,simi=[],[],[],[],[]
 for root, dirs, files in os.walk(source):
     for OneFileName in files:
@@ -46,6 +46,8 @@ for root, dirs, files in os.walk(source):
         for line in myfile:
             data = json.loads(line,strict=False)
             for key in data:
+                myid.append(data[key]["id"])
+                com.append(data[key]["comp_name"])
                 status_id.append(data[key]["status_id"])
                 status_title.append(data[key]["status_title"])
                 name.append(data[key]["name"])
@@ -181,9 +183,9 @@ for line in wanghuifile:
         simi.append(float(score))  
 wanghuifile.close()                 
 df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary,
-                   latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location,hrjob1,hrjob2,peoplejob1,peoplejob2,simi]).T
+                   latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location,hrjob1,hrjob2,peoplejob1,peoplejob2,simi,com,myid]).T
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
-                        18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location",35:"hrjob1",36:"hrjob2",37:"peoplejob1",38:"peoplejob2",39:"simi"})
+                        18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location",35:"hrjob1",36:"hrjob2",37:"peoplejob1",38:"peoplejob2",39:"simi",40:"com",41:"id"})
 # df["my"]=2.718281828459 
 # dfwanghui=df[["status","workexp","projectexp","my","long_desc"]]
 # print dfwanghui
@@ -324,6 +326,9 @@ df = df[(df["status"]!=2)]
 output = open("D:/luheng/mydata/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
+print len(df["com"])
+print len(df["com"].unique())
+df.to_csv("D:/luheng/mydata/findcom.csv",index=False,header=True)
 # predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
 #               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary","simi" ,"location"]   
 # # for x in df["job_degree_level"].unique():
