@@ -42,6 +42,26 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
+thre = 0.9
+df["position"]=df["position"].fillna(-1)
+df=df[(df["position"]!=-1)]
+for company in df["com"].unique():
+    mycom = df[(df["com"]==company)]
+    for position in mycom["position"].unique():
+    	mypos = df[(df["position"]==position)&(df["com"]==company)]
+    	df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
+    passnum = mycom[(mycom["status"]==1)]
+    failurenum =  mycom[(mycom["status"]==0)]
+    if len(mycom)<5:
+        df.loc[df["com"]==company,"comstatus"]=1
+    else:
+        if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
+            df.loc[df["com"]==company,"comstatus"]=0
+        else :
+            df.loc[df["com"]==company,"comstatus"]=1
+    df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
+df = df[(df["comstatus"]==1)]   
+print df["positionlen"]
 # print df
 # df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 # df["my"]=2.718281828459 
@@ -68,7 +88,18 @@ df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2","simi","status"]   
 df[change] = df[change].astype(float)
-df = df[(df["hrjob1"]==u"生产-营运-采购-物流")]
+df.loc[(df["hrjob1"]==u"计算机-互联网-通信-电子"),"job"]=0
+df.loc[(df["hrjob1"]==u"人事-行政-高级管理"),"job"]=1
+df.loc[(df["hrjob1"]==u"会计-金融-银行-保险"),"job"]=2
+df.loc[(df["hrjob1"]==u"销售-客服-技术支持"),"job"]=3
+df.loc[(df["hrjob1"]==u"广告-市场-媒体-艺术"),"job"]=4
+df.loc[(df["hrjob1"]==u"建筑-房地产"),"job"]=5
+df.loc[(df["hrjob1"]==u"服务业"),"job"]=6
+df.loc[(df["hrjob1"]==u"公务员-翻译-其他"),"job"]=7
+df.loc[(df["hrjob1"]==u"生物-制药-医疗-护理"),"job"]=8
+df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
+df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
+df = df[(df["job"]==0)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 # df = df[(df["workexp_months"]<300)]
 # df = df[(df["expect_salary"]<20000)]
@@ -136,8 +167,8 @@ df6=df4[stat]
 # plt.ylabel(u"是否通过筛选")
 # plt.title( "x-y" )
 # plt.show()
-# df3["simi"].plot(kind='density')
-df["simi"].plot(kind='density')
+df5["simi"].plot(kind='density')
+df6["simi"].plot(kind='density')
 plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

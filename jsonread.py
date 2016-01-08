@@ -56,7 +56,6 @@ for root, dirs, files in os.walk(source):
                 elif  "pipipi" in data[key]["comp_name"]:
                     com.append(-1)     
                 elif  "淘贝贝" in data[key]["comp_name"]:
-                    print -1
                     com.append(-1)        
                 else:    
                     com.append(data[key]["comp_name"])
@@ -117,15 +116,22 @@ for root, dirs, files in os.walk(source):
                 if myworkexp != None:
                     for key1 in myworkexp:
                         mywork += myworkexp[key1]["job_text"]
+                        mywork +="2.718281828459" 
                     mywork = "".join(mywork.split())
-                    workexp.append(mywork)
+                else:
+                    mywork = "".join("2.718281828459")    
+                workexp.append(mywork)
                 myprojectexp = data[key]["projectexp"]
                 myproject = ""
                 if myprojectexp != None:
                     for key2 in myprojectexp:
                         myproject += myprojectexp[key2]["project_desc"]
+                        myproject += myprojectexp[key2]["responsibility"]
+                        myproject +="2.718281828459"
                     myproject = "".join(myproject.split())
-                    projectexp.append(myproject)
+                else:
+                    myproject = "".join("2.718281828459")     
+                projectexp.append(myproject)
                 state.append(data[key]["state"])
                 city.append(data[key]["city"])
                 industry.append(data[key]["industry"])
@@ -183,7 +189,7 @@ for line in myfilepeople:
         peoplejob1.append("dosomething")    
         peoplejob2.append("dosomething")        
 myfilehr.close()      
-wanghuifile = open("D:/luheng/mydata/toluheng0.7.txt",'r') 
+wanghuifile = open("D:/luheng/mydata/toluhengnew2.txt",'r') 
 for line in wanghuifile:
     if line=="数据不全\n":
         simi.append(-1)
@@ -199,7 +205,7 @@ df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marr
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
                         18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location",35:"hrjob1",36:"hrjob2",37:"peoplejob1",38:"peoplejob2",39:"simi",40:"com",41:"id"})
 # df["my"]=2.718281828459 
-# dfwanghui=df[["status","workexp","projectexp","my","long_desc"]]
+# dfwanghui=df[["long_desc","my","workexp","projectexp"]]
 # print dfwanghui
 # dfwanghui.to_csv("D:/luheng/mypython/towanghui.txt",index=False,header=False)
 # print u"给王会的文件写入成功！"
@@ -241,10 +247,37 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # 筛选待定=365
 # 辞退=29
 # 需再联系=35
+# df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
+# df.loc[df["status_title"] == u"面试不合格", "status"] = 1
+# df.loc[df["status_title"] == u"已面试", "status"] = 1
+# df.loc[df["status_title"] == u"面试取消", "status"] = 2
+# df.loc[df["status_title"] == u"已发offer", "status"] = 1
+# df.loc[df["status_title"] == u"试用期", "status"] = 1
+# df.loc[df["status_title"] == u"离职", "status"] = 1
+# df.loc[df["status_title"] == u"筛选合格", "status"] = 1
+# df.loc[df["status_title"] == u"缺席", "status"] = 1
+# df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
+# df.loc[df["status_title"] == u"复试", "status"] = 1
+# df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
+# df.loc[df["status_title"] == u"将面试", "status"] = 1
+# df.loc[df["status_title"] == u"接受offer", "status"] = 1
+# df.loc[df["status_title"] == u"面试合格", "status"] = 1
+# df.loc[df["status_title"] == u"已通知落选", "status"] = 1
+# df.loc[df["status_title"] == u"转正", "status"] = 1
+# df.loc[df["status_title"] == u"筛选待定", "status"] = 2
+# df.loc[df["status_title"] == u"辞退", "status"] = 1
+# df.loc[df["status_title"] == u"需再联系", "status"] = 2
+# df["my"]=2.718281828459
+# dfwanghui=df[["long_desc","my","workexp","projectexp"]]
+# dfwanghui.to_csv("D:/luheng/mydata/towanghui.txt",index=False,header=False)
+# print u"给王会的文件写入成功！"
+# df1=df[["status"]]
+# print df["comp"].describe()
+# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
 df.loc[df["status_title"] == u"面试不合格", "status"] = 1
 df.loc[df["status_title"] == u"已面试", "status"] = 1
-df.loc[df["status_title"] == u"面试取消", "status"] = 2
+df.loc[df["status_title"] == u"面试取消", "status"] = 1
 df.loc[df["status_title"] == u"已发offer", "status"] = 1
 df.loc[df["status_title"] == u"试用期", "status"] = 1
 df.loc[df["status_title"] == u"离职", "status"] = 1
@@ -252,7 +285,7 @@ df.loc[df["status_title"] == u"筛选合格", "status"] = 1
 df.loc[df["status_title"] == u"缺席", "status"] = 1
 df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
 df.loc[df["status_title"] == u"复试", "status"] = 1
-df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
+df.loc[df["status_title"] == u"联系方式无效", "status"] = 1
 df.loc[df["status_title"] == u"将面试", "status"] = 1
 df.loc[df["status_title"] == u"接受offer", "status"] = 1
 df.loc[df["status_title"] == u"面试合格", "status"] = 1
@@ -260,35 +293,7 @@ df.loc[df["status_title"] == u"已通知落选", "status"] = 1
 df.loc[df["status_title"] == u"转正", "status"] = 1
 df.loc[df["status_title"] == u"筛选待定", "status"] = 2
 df.loc[df["status_title"] == u"辞退", "status"] = 1
-df.loc[df["status_title"] == u"需再联系", "status"] = 2
-# df["my"]=2.718281828459 
-# dfwanghui=df[["status","workexp","projectexp","my","long_desc"]]
-# print dfwanghui
-# dfwanghui.to_csv("D:/luheng/mypython/towanghui.txt",index=False,header=False)
-# print u"给王会的文件写入成功！"
-# df1=df[["status"]]
-# print df["comp"].describe()
-# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
-# df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
-# df.loc[df["status_title"] == u"面试不合格", "status"] = 0
-# df.loc[df["status_title"] == u"已面试", "status"] = 2
-# df.loc[df["status_title"] == u"面试取消", "status"] = 2
-# df.loc[df["status_title"] == u"已发offer", "status"] = 1
-# df.loc[df["status_title"] == u"试用期", "status"] = 1
-# df.loc[df["status_title"] == u"离职", "status"] = 1
-# df.loc[df["status_title"] == u"筛选合格", "status"] = 2
-# df.loc[df["status_title"] == u"缺席", "status"] = 2
-# df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
-# df.loc[df["status_title"] == u"复试", "status"] = 2
-# df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
-# df.loc[df["status_title"] == u"将面试", "status"] = 2
-# df.loc[df["status_title"] == u"接受offer", "status"] = 1
-# df.loc[df["status_title"] == u"面试合格", "status"] = 1
-# df.loc[df["status_title"] == u"已通知落选", "status"] = 0
-# df.loc[df["status_title"] == u"转正", "status"] = 1
-# df.loc[df["status_title"] == u"筛选待定", "status"] = 2
-# df.loc[df["status_title"] == u"辞退", "status"] = 1
-# df.loc[df["status_title"] == u"需再联系", "status"] = 2
+df.loc[df["status_title"] == u"需再联系", "status"] = 1
 df.loc[df["sex"] == u"M", "sex"] = 0
 df.loc[df["sex"] == u"F", "sex"] = 1
 df["sex"] = df["sex"].fillna(0)
@@ -334,13 +339,15 @@ df.loc[df["job_exp"] == u"8年以上", "job_exp"] = 96
 df.loc[df["job_exp"] == u"10年以上", "job_exp"] = 120
 df[["job_exp"]] = df[["job_exp"]].fillna(0)
 df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]
-# df = df[(df["status"]!=2)]   
+df = df[(df["status"]!=2)]   
 df = df[(df["com"]!=-1)]
 print len(df)      
 df = df.drop_duplicates(["name","com"])  
 output = open("D:/luheng/mydata/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
+# for position in df["position"].unique():
+#     print position
 print len(df)
 print len(df["com"].unique())
 df.to_csv("D:/luheng/mydata/findcom.csv",index=False,header=True)

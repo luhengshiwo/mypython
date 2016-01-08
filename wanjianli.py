@@ -16,6 +16,7 @@ from sklearn import ensemble
 from sklearn import cross_validation
 from sklearn import linear_model
 from sklearn import naive_bayes
+from sklearn import neighbors
 from sklearn.feature_selection import SelectFromModel
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -35,7 +36,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
-              "degree", "salary1","job1","job2","simi","location"]                 
+              "degree", "expect_salary","salary1","job1","job2","simi","location"]                 
 pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 # df = df[(df["status"]!=2)]
@@ -46,9 +47,14 @@ pickle_file.close()
 print u"读入pkl成功，进行下一步"
 print len(df["com"])
 print len(df["com"].unique())
-thre = 0.9
+thre = 0.8
+df["position"]=df["position"].fillna(-1)
+df=df[(df["position"]!=-1)]
 for company in df["com"].unique():
     mycom = df[(df["com"]==company)]
+    for position in mycom["position"].unique():
+        mypos = df[(df["position"]==position)&(df["com"]==company)]
+        df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
     passnum = mycom[(mycom["status"]==1)]
     failurenum =  mycom[(mycom["status"]==0)]
     if len(mycom)<5:
@@ -59,10 +65,12 @@ for company in df["com"].unique():
         else :
             df.loc[df["com"]==company,"comstatus"]=1
     df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
-# df = df[(df["comstatus"]==1)] 
-df.to_csv("D:/luheng/mydata/findcomdelete.csv",index=False,header=True)
-print len(df)
-print len(df["com"].unique())
+df = df[(df["comstatus"]==1)]   
+# df.to_csv("D:/luheng/mydata/findcomdelete.csv",index=False,header=True)
+# print len(df)
+# for industry in df["expect_industry"].unique():
+#     print industry
+# print len(df["com"].unique())
 # print df
 # df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 # df["my"]=2.718281828459 
@@ -87,7 +95,8 @@ df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2"]   
 df[change] = df[change].astype(int)
-df["simi"]=df["simi"].dropna()
+df["position"]=df["position"].fillna(-1)
+df=df[(df["position"]!=-1)]
 # df = df[(df["hrjob1"]==u"计算机-互联网-通信-电子")]
 df.loc[(df["hrjob1"]==u"计算机-互联网-通信-电子"),"job"]=0
 df.loc[(df["hrjob1"]==u"人事-行政-高级管理"),"job"]=1
@@ -149,9 +158,12 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
 # clf=ensemble.RandomForestClassifier(n_estimators=10)
 # param={"kernel":("rbf","linear","poly","sigmoid")}
-clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
+# clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
 # clf=grid_search.GridSearchCV(clf,param)
 # clf=linear_model.LogisticRegression()
+# weak = neighbors.KNeighborsClassifier()
+weak  = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
+clf = ensemble.BaggingClassifier(weak,max_samples = 0.7,max_features=0.7)
 # clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
 # print clf
 # clf = tree.ExtraTreeClassifier()
@@ -198,7 +210,7 @@ y1,y2,y3=recall
 print u"测试集得分明细如下："
 print u"负样本个数：%s,预测为负样本的个数：%s,其中预测准确个数: %s" %(c,e,int(e-d+d*y2))
 print u"正样本个数：%s,预测为正样本的个数：%s,其中预测准确个数: %s" %(d,f,int(d*y2))  
-print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
+print u"精确率：%.4f,召回率: %.4f" %(x2,y2)
 # tree.export_graphviz(clf,out_file = "D:/luheng/mypython/tree.dot")
 # with open("D:/luheng/mypython/tree.dot", 'w') as f:
 #     f = tree.export_graphviz(clf, out_file=f) 
@@ -237,5 +249,27 @@ print u"准确率：%.4f,召回率: %.4f" %(x2,y2)
 # mydf.to_csv("D:/luheng/mydata/job2distinguish.csv",index=False,header=True)
 # df["hrjob1"].to_csv("D:/luheng/mydata/job.csv",index=False,header=True)
 # print len(mydf)
+# stat=["simi"]
+# df2 = df[["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level","job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","simi","status"]]
+# df3 = df[(df["status"]==0)]
+# print df3[stat].describe()
+# df4 = df[(df["status"]==1)]
+# print df4[stat].describe()
+# print df[stat].describe()
+# df5=df3[stat]
+# df6=df4[stat]
+# # N=688
+# # colors = np.random.rand(N)
+# # area = np.pi * (np.random.rand(N)*10 )**2 
+# # plt.scatter(df["simi"],df["status"])
+# # plt.xlim(-0.1,1.1)
+# # plt.ylim(-0.1,1.1)
+# # plt.xlabel(u"相似度")
+# # plt.ylabel(u"是否通过筛选")
+# # plt.title( "x-y" )
+# # plt.show()
+# df5["simi"].plot(kind='density')
+# df6["simi"].plot(kind='density')
+# plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)
