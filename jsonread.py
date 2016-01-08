@@ -27,24 +27,24 @@ import jieba
 from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
-# from sklearn.externals.six import StringIO
-# import pydot
+"""
+这个py文件主要是用来读取json文件，并将其量化，存入pkl中
+"""
 reload(sys)
-sys.setdefaultencoding('utf-8')
+sys.setdefaultencoding('utf-8')#中文字体兼容
 begin = time.time()
-source = "D:/luheng/mydata/parsedata"
-corpus = []
+source = "D:/luheng/mydata/parsedata"#json文件夹所在目录
 status_id, status_title, name, sex, age, workexp_months, marriage, school_name, school_level, major_name, degree_level, expect_jobtype, expect_location, expect_salary, expect_industry, expect_position, expect_spec, latest_workexp_job_salary, latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location, sim,hrjob1,hrjob2,peoplejob1,peoplejob2 ,com,myid,comsource= [
 ], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[],[],[],[]
-hrjob1,hrjob2,peoplejob1,peoplejob2,simi=[],[],[],[],[]
+hrjob1,hrjob2,peoplejob1,peoplejob2,simi=[],[],[],[],[]#初始化所遇需要的属性
 for root, dirs, files in os.walk(source):
     for OneFileName in files:
         if OneFileName.find('.txt') == -1:
             continue
         OneFullFileName = join(root, OneFileName)
-        myfile = open(OneFullFileName)
+        myfile = open(OneFullFileName)#读每一个txt
         for line in myfile:
-            data = json.loads(line,strict=False)
+            data = json.loads(line,strict=False)#分行读每一个json
             for key in data:
                 myid.append(data[key]["id"])
                 if data[key]["comp_name"] == None:
@@ -58,16 +58,16 @@ for root, dirs, files in os.walk(source):
                 elif  "淘贝贝" in data[key]["comp_name"]:
                     com.append(-1)        
                 else:    
-                    com.append(data[key]["comp_name"])
+                    com.append(data[key]["comp_name"])#给测试数据的公司名打标记
                 status_id.append(data[key]["status_id"])
                 status_title.append(data[key]["status_title"])
                 name.append(data[key]["name"])
                 sex.append(data[key]["sex"])
                 birth = data[key]["dateofbirth"]
                 try:
-                    age.append(2015 - time.strptime(birth, "%Y-%m-%d")[0])
+                    age.append(2016 - time.strptime(birth, "%Y-%m-%d")[0])
                 except:
-                    age.append(0)
+                    age.append(0)#年龄
                 workexp_months.append(data[key]["workexp_months"])
                 marriage.append(data[key]["marriage"])
                 school_name.append(data[key]["school_name"])
@@ -87,7 +87,7 @@ for root, dirs, files in os.walk(source):
                 elif city == data[key]["city"]:
                     location.append(1)
                 else:
-                    location.append(0)
+                    location.append(0)#工作地点是否匹配
                 nextsalary = 0
                 if data[key]["expect_salary"] == u"面议" or data[key]["expect_salary"] == "":
                     nextsalary = 0
@@ -98,7 +98,7 @@ for root, dirs, files in os.walk(source):
                         nextsalary = (int(salary[0]) + int(salary[1])) / 2
                     elif len(salary) == 1:
                         nextsalary = int(salary[0])
-                expect_salary.append(nextsalary)
+                expect_salary.append(nextsalary)#计算期望薪资
                 expect_industry.append(data[key]["expect_industry"])
                 expect_position.append(data[key]["expect_position"])
                 expect_spec.append(data[key]["expect_spec"])
@@ -120,7 +120,7 @@ for root, dirs, files in os.walk(source):
                     mywork = "".join(mywork.split())
                 else:
                     mywork = "".join("2.718281828459")    
-                workexp.append(mywork)
+                workexp.append(mywork)#记录每一段工作经验，用e隔开
                 myprojectexp = data[key]["projectexp"]
                 myproject = ""
                 if myprojectexp != None:
@@ -131,7 +131,7 @@ for root, dirs, files in os.walk(source):
                     myproject = "".join(myproject.split())
                 else:
                     myproject = "".join("2.718281828459")     
-                projectexp.append(myproject)
+                projectexp.append(myproject)#记录每一段项目经验，用e隔开
                 state.append(data[key]["state"])
                 city.append(data[key]["city"])
                 industry.append(data[key]["industry"])
@@ -144,7 +144,7 @@ for root, dirs, files in os.walk(source):
                         hrformysalary = (int(salary[0]) + int(salary[1])) / 2
                     elif len(salary) == 1:
                         hrformysalary = int(salary[0])
-                salary_type.append(hrformysalary)
+                salary_type.append(hrformysalary)#计算HR提供的薪资
                 job_degree_level.append(data[key]["job_degree_level"])
                 job_skill.append(data[key]["job_skill"])
                 job_exp.append(data[key]["job_exp"])
@@ -154,15 +154,12 @@ for root, dirs, files in os.walk(source):
                     mydesc = re.sub('<[^>]+>', '', mydesc)
                     long_desc.append(mydesc)
                 else:
-                    long_desc.append("")
-                employment_type.append(data[key]["employment_type"])
-                # if "pipapai" in data[key]["comp_email"]:
-                #     comp.append(1)
-                # elif "ifxxtt123@163.com" in data[key]["comp_email"] :  
-                #     comp.append(1)
-                # else :
-                #     comp.append(0)         
+                    long_desc.append("")#职位要求
+                employment_type.append(data[key]["employment_type"])     
         myfile.close() 
+"""打开两个文件，用求职者的职位和HR的职位大类小类做匹配
+读取项目经验工作经验和职位要求的相似度
+"""        
 myfilehr = open("D:/luheng/mydata/myhr.txt",'r') 
 for line in myfilehr:
     index1 = line.find("\t")
@@ -204,6 +201,9 @@ df = pd.DataFrame([status_id, status_title, name, sex, age, workexp_months, marr
                    latest_workexp_job_industry, latest_workexp_job_spec, latest_workexp_job_position, skill, workexp, projectexp, state, city, industry, position, salary_type, job_degree_level, job_skill, job_exp, long_desc, employment_type, location,hrjob1,hrjob2,peoplejob1,peoplejob2,simi,com,myid]).T
 df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 4: "age", 5: "workexp_months", 6: "marriage", 7: "school_name", 8: "school_level", 9: "major_name", 10: "degree_level", 11: "expect_jobtype", 12: "expect_location", 13: "expect_salary", 14: "expect_industry", 15: "expect_position", 16: "expect_spec", 17: "latest_workexp_job_salary",
                         18: "latest_workexp_job_industry", 19: "latest_workexp_job_spec", 20: "latest_workexp_job_position", 21: "skill", 22: "workexp", 23: "projectexp", 24: "state", 25: "city", 26: "industry", 27: "position", 28: "salary_type", 29: "job_degree_level", 30: "job_skill", 31: "job_exp", 32: "long_desc", 33: "employment_type", 34: "location",35:"hrjob1",36:"hrjob2",37:"peoplejob1",38:"peoplejob2",39:"simi",40:"com",41:"id"})
+"""
+建立了DataFrame 框架，后续操作可以用pandas
+"""
 # df["my"]=2.718281828459 
 # dfwanghui=df[["long_desc","my","workexp","projectexp"]]
 # print dfwanghui
@@ -216,17 +216,6 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # print dfchenge
 # dfchenge.to_csv("D:/luheng/mypython/mypeoplebf.txt",index=False,header=False)
 # print u"给陈戈的文件写入成功！"
-# i=0
-# for x in df["status_title"]:
-# 	if x == u"面试不合格":
-# 		i+=1
-# print i
-# df.loc[df["status_title"]==u"筛选不合格","status"]=0
-# df.loc[df["status_title"]!=u"筛选不合格","status"]=1
-# for x in df["status_title"].unique():
-# 	print x
-# df2 = df["status_title"]
-# print df2.describe()
 #筛选不合格=18594
 # 面试不合格=355
 # 已面试=6721
@@ -247,33 +236,6 @@ df = df.rename(columns={0: "status_id", 1: "status_title", 2: "name", 3: "sex", 
 # 筛选待定=365
 # 辞退=29
 # 需再联系=35
-# df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
-# df.loc[df["status_title"] == u"面试不合格", "status"] = 1
-# df.loc[df["status_title"] == u"已面试", "status"] = 1
-# df.loc[df["status_title"] == u"面试取消", "status"] = 2
-# df.loc[df["status_title"] == u"已发offer", "status"] = 1
-# df.loc[df["status_title"] == u"试用期", "status"] = 1
-# df.loc[df["status_title"] == u"离职", "status"] = 1
-# df.loc[df["status_title"] == u"筛选合格", "status"] = 1
-# df.loc[df["status_title"] == u"缺席", "status"] = 1
-# df.loc[df["status_title"] == u"拒绝offer", "status"] = 1
-# df.loc[df["status_title"] == u"复试", "status"] = 1
-# df.loc[df["status_title"] == u"联系方式无效", "status"] = 2
-# df.loc[df["status_title"] == u"将面试", "status"] = 1
-# df.loc[df["status_title"] == u"接受offer", "status"] = 1
-# df.loc[df["status_title"] == u"面试合格", "status"] = 1
-# df.loc[df["status_title"] == u"已通知落选", "status"] = 1
-# df.loc[df["status_title"] == u"转正", "status"] = 1
-# df.loc[df["status_title"] == u"筛选待定", "status"] = 2
-# df.loc[df["status_title"] == u"辞退", "status"] = 1
-# df.loc[df["status_title"] == u"需再联系", "status"] = 2
-# df["my"]=2.718281828459
-# dfwanghui=df[["long_desc","my","workexp","projectexp"]]
-# dfwanghui.to_csv("D:/luheng/mydata/towanghui.txt",index=False,header=False)
-# print u"给王会的文件写入成功！"
-# df1=df[["status"]]
-# print df["comp"].describe()
-# df1.to_csv("D:/luheng/mypython/mylooktry.csv",index=False,header=False)
 df.loc[df["status_title"] == u"筛选不合格", "status"] = 0
 df.loc[df["status_title"] == u"面试不合格", "status"] = 1
 df.loc[df["status_title"] == u"已面试", "status"] = 1
@@ -341,16 +303,14 @@ df[["job_exp"]] = df[["job_exp"]].fillna(0)
 df=df[(df["degree_level"]==0)|(df["degree_level"]==1)|(df["degree_level"]==2)|(df["degree_level"]==3)]
 df = df[(df["status"]!=2)]   
 df = df[(df["com"]!=-1)]
-print len(df)      
-df = df.drop_duplicates(["name","com"])  
+df = df.drop_duplicates(["name","com"])  #按名字和公司去重
 output = open("D:/luheng/mydata/truedata.pkl", 'wb')
 pickle.dump(df, output)
 print u"成功写入pkl"
-# for position in df["position"].unique():
-#     print position
-print len(df)
-print len(df["com"].unique())
 df.to_csv("D:/luheng/mydata/findcom.csv",index=False,header=True)
+"""
+上述过程对数据进行了预处理，并将结果存入pkl
+"""
 # predictors = ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
 #               "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary","simi" ,"location"]   
 # # for x in df["job_degree_level"].unique():
@@ -375,7 +335,6 @@ df.to_csv("D:/luheng/mydata/findcom.csv",index=False,header=True)
 # print clf.score(x_train, y_train)
 # print clf.score(x_test, y_test)
 # 画决策树图
-
 # tree.export_graphviz(clf,outfile = "D:/luheng/mypython/tree.dot")
 # dot_data = StringIO()
 # tree.export_graphviz(clf,out_file=dot_data)

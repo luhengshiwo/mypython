@@ -29,8 +29,6 @@ from sklearn import metrics
 from sklearn import neighbors
 from sklearn import grid_search
 import math
-# from sklearn.externals.six import StringIO
-# import pydot
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -39,10 +37,6 @@ predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
               "degree", "expect_salary","salary1","job1","job2","simi","location"]                 
 pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
-# df = df[(df["status"]!=2)]
-# df3=df[["position","expect_position"]]
-# print df3
-# df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
 print len(df["com"])
@@ -66,25 +60,9 @@ for company in df["com"].unique():
             df.loc[df["com"]==company,"comstatus"]=1
     df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
 df = df[(df["comstatus"]==1)]   
-# df.to_csv("D:/luheng/mydata/findcomdelete.csv",index=False,header=True)
-# print len(df)
-# for industry in df["expect_industry"].unique():
-#     print industry
-# print len(df["com"].unique())
-# print df
-# df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
-# df["my"]=2.718281828459 
-# dfwanghui=df[["workexp","projectexp","my","long_desc"]]
-# print dfwanghui
-# dfwanghui.to_csv("D:/luheng/mypython/towanghui.txt",index=False,header=False)
-# print u"给王会的文件写入成功！"
-# dfchenge=df[["industry","position","long_desc"]]
-# print dfchenge
-# dfchenge.to_csv("D:/luheng/mypython/dfchenge.txt",index=False,header=False)
-# dfchenge=df[["expect_industry","expect_position","expect_spec","workexp","projectexp"]]
-# print dfchenge
-# dfchenge.to_csv("D:/luheng/mypython/dfchenge22.txt",index=False,header=False)
-# print u"给陈戈的文件写入成功！"
+"""
+上述代码是删除全是通过或者全不通过的公司，0.8为阀值
+"""
 df = df[(df["peoplejob2"]!="dosomething")]
 df = df[(df["hrjob2"]!="dosomething")]
 df=df[(df["simi"]!=-1)]
@@ -97,10 +75,12 @@ change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", 
 df[change] = df[change].astype(int)
 df["position"]=df["position"].fillna(-1)
 df=df[(df["position"]!=-1)]
-# df = df[(df["hrjob1"]==u"计算机-互联网-通信-电子")]
+"""
+对职位大类进行分类，后面可以按大类跑算法
+"""
 df.loc[(df["hrjob1"]==u"计算机-互联网-通信-电子"),"job"]=0
 df.loc[(df["hrjob1"]==u"人事-行政-高级管理"),"job"]=1
-df.loc[(df["hrjob1"]==u"会计-金融-银行-保险"),"job"]=2
+df.loc[(df["hrjob1"]==u"会计-金融-银行-保险"),"job"]=2 
 df.loc[(df["hrjob1"]==u"销售-客服-技术支持"),"job"]=3
 df.loc[(df["hrjob1"]==u"广告-市场-媒体-艺术"),"job"]=4
 df.loc[(df["hrjob1"]==u"建筑-房地产"),"job"]=5
@@ -111,19 +91,6 @@ df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
 df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
 # df = df[(df["job"]==0)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
-# df = df[(df["expect_salary"]<20000)]
-# df = df[(df["latest_workexp_job_salary"]<20000)]
-# df = df[(df["salary_type"]<20000)]
-# df = df[(df["expect_salary"]>1000)]
-# df2 = df[(df["job2"]==0)&(df["status"]==1)&(df["job1"]==1)]
-# df3 = df[(df["job2"]==0)&(df["status"]==0)&(df["job1"]==1)]
-# df4 = df[(df["job2"]==1)&(df["status"]==0)]
-# df5 = df[(df["job2"]==1)&(df["status"]==1)]
-# print len(df)
-# print len(df2)
-# print len(df3)
-# print len(df4)
-# print len(df5)
 df.loc[(df["job_exp"] == 0)&(df["workexp_months"] <= 0), "exp"] = 1
 df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1/df["workexp_months"]
 df.loc[(df["job_exp"] > 0)&(df["workexp_months"] <= 0), "exp"] = 1/df["job_exp"]
@@ -142,14 +109,13 @@ df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
 df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
 df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
 df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
-# # print df.describe()
-# # df1=df[(df["status"]==1)]
-# # print df1
-# # df.to_csv("D:/luheng/mypython/mylook3.csv",index=False,header=True)
-# # df1.to_csv("D:/luheng/mypython/mylook2.csv",index=False,header=True)
+'''
+正式开始跑算法了
+'''
 x = df[predictors]
 x=(x-x.mean())/x.std()
 y = df["status"]
+#计算每个属性的支持度，可以选择支持度最好的几个属性
 # kbest=SelectKBest(f_classif, k=10).fit(x,y)
 # x=kbest.transform(x)
 # print  kbest.get_support()
