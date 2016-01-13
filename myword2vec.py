@@ -5,7 +5,7 @@ import numpy as np
 import scipy as sp
 import jieba
 from gensim import corpora,models,similarities
-content= open("D:/luheng/mypython/mytry.txt")
+content= open("D:/luheng/mydata/mytry.txt")
 corpus=[]
 for line in content:
     wg = jieba.cut(line, cut_all=False)

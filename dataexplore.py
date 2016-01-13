@@ -42,26 +42,26 @@ df = pickle.load(pickle_file)
 # df3.to_csv("D:/luheng/mypython/HRandpeople.txt",index=False,header=False)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-thre = 0.9
-df["position"]=df["position"].fillna(-1)
-df=df[(df["position"]!=-1)]
-for company in df["com"].unique():
-    mycom = df[(df["com"]==company)]
-    for position in mycom["position"].unique():
-    	mypos = df[(df["position"]==position)&(df["com"]==company)]
-    	df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
-    passnum = mycom[(mycom["status"]==1)]
-    failurenum =  mycom[(mycom["status"]==0)]
-    if len(mycom)<5:
-        df.loc[df["com"]==company,"comstatus"]=1
-    else:
-        if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
-            df.loc[df["com"]==company,"comstatus"]=0
-        else :
-            df.loc[df["com"]==company,"comstatus"]=1
-    df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
-df = df[(df["comstatus"]==1)]   
-print df["positionlen"]
+# thre = 0.9
+# df["position"]=df["position"].fillna(-1)
+# df=df[(df["position"]!=-1)]
+# for company in df["com"].unique():
+#     mycom = df[(df["com"]==company)]
+#     for position in mycom["position"].unique():
+#     	mypos = df[(df["position"]==position)&(df["com"]==company)]
+#     	df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
+#     passnum = mycom[(mycom["status"]==1)]
+#     failurenum =  mycom[(mycom["status"]==0)]
+#     if len(mycom)<5:
+#         df.loc[df["com"]==company,"comstatus"]=1
+#     else:
+#         if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
+#             df.loc[df["com"]==company,"comstatus"]=0
+#         else :
+#             df.loc[df["com"]==company,"comstatus"]=1
+#     df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
+# df = df[(df["comstatus"]==1)]   
+# print df["positionlen"]
 # print df
 # df.to_csv("D:/luheng/mypython/HRpeople.csv",index=False)
 # df["my"]=2.718281828459 
@@ -99,7 +99,7 @@ df.loc[(df["hrjob1"]==u"公务员-翻译-其他"),"job"]=7
 df.loc[(df["hrjob1"]==u"生物-制药-医疗-护理"),"job"]=8
 df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
 df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
-df = df[(df["job"]==0)]
+# df = df[(df["job"]==0)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 # df = df[(df["workexp_months"]<300)]
 # df = df[(df["expect_salary"]<20000)]
@@ -148,27 +148,46 @@ df.loc[df["expect_salary"] == 0, "expect_salary"] = 5500
 df["salary2"]=df["latest_workexp_job_salary"]-df["expect_salary"]
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
               "degree", "salary1","job1","job2","simi","location"]            
-stat=["simi"]
-df2 = df[["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level","job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","simi","status"]]
-df3 = df[(df["status"]==0)]
-print df3[stat].describe()
-df4 = df[(df["status"]==1)]
-print df4[stat].describe()
-print df[stat].describe()
-df5=df3[stat]
-df6=df4[stat]
-# N=688
-# colors = np.random.rand(N)
-# area = np.pi * (np.random.rand(N)*10 )**2 
-# plt.scatter(df["simi"],df["status"])
-# plt.xlim(-0.1,1.1)
-# plt.ylim(-0.1,1.1)
-# plt.xlabel(u"相似度")
-# plt.ylabel(u"是否通过筛选")
-# plt.title( "x-y" )
-# plt.show()
-df5["simi"].plot(kind='density')
-df6["simi"].plot(kind='density')
+df =df[(df["workexp_months"]<1000)]
+fig = plt.figure()
+fig.set(alpha=0.2)  # 设定图表颜色alpha参数
+
+# plt.subplot2grid((2,3),(0,2))
+# status_0 = df.sex[df.status == 0].value_counts()
+# status_1 = df.sex[df.status == 1].value_counts()
+# df=pd.DataFrame({u'推荐':status_1, u'未推荐':status_0})
+# df.plot(kind='bar', stacked=True)
+# plt.title(u"各性别的推荐情况")
+# plt.xlabel(u"性别") 
+# plt.ylabel(u"人数") 
+
+
+#人数分布
+plt.subplot2grid((2,3),(0,0))             # 在一张大图里分列几个小图
+df.status.value_counts().plot(kind='bar')# 柱状图 
+plt.title(u"推荐情况 (1为推荐)") # 标题
+plt.ylabel(u"人数") 
+
+#求职者分布
+plt.subplot2grid((2,3),(0,1))
+df.degree_level.value_counts().plot(kind="bar")
+plt.ylabel(u"人数")
+plt.title(u"求职者学历分布")
+
+#年龄分布
+plt.subplot2grid((2,3),(0,2))
+plt.scatter(df.status, df.age)
+plt.ylabel(u"年龄")                         # 设定纵坐标名称
+plt.grid(b=True, which='major', axis='y') 
+plt.title(u"按年龄看推荐分布 (1为推荐)")
+
+#工作经验分布
+plt.subplot2grid((2,3),(1,0))
+plt.scatter(df.status, df.workexp_months)
+plt.ylabel(u"工作经验")                         # 设定纵坐标名称
+plt.grid(b=True, which='major', axis='y') 
+plt.title(u"按工作经验看推荐分布 (1为推荐)")
+
 plt.show()
 end = time.time()
 print u"花费时间：%.2fs" % (end - begin)

@@ -41,25 +41,25 @@ pickle_file.close()
 print u"读入pkl成功，进行下一步"
 print len(df["com"])
 print len(df["com"].unique())
-thre = 0.8
-df["position"]=df["position"].fillna(-1)
-df=df[(df["position"]!=-1)]
-for company in df["com"].unique():
-    mycom = df[(df["com"]==company)]
-    for position in mycom["position"].unique():
-        mypos = df[(df["position"]==position)&(df["com"]==company)]
-        df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
-    passnum = mycom[(mycom["status"]==1)]
-    failurenum =  mycom[(mycom["status"]==0)]
-    if len(mycom)<5:
-        df.loc[df["com"]==company,"comstatus"]=1
-    else:
-        if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
-            df.loc[df["com"]==company,"comstatus"]=0
-        else :
-            df.loc[df["com"]==company,"comstatus"]=1
-    df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
-df = df[(df["comstatus"]==1)]   
+# thre = 0.8
+# df["position"]=df["position"].fillna(-1)
+# df=df[(df["position"]!=-1)]
+# for company in df["com"].unique():
+#     mycom = df[(df["com"]==company)]
+#     for position in mycom["position"].unique():
+#         mypos = df[(df["position"]==position)&(df["com"]==company)]
+#         df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
+#     passnum = mycom[(mycom["status"]==1)]
+#     failurenum =  mycom[(mycom["status"]==0)]
+#     if len(mycom)<5:
+#         df.loc[df["com"]==company,"comstatus"]=1
+#     else:
+#         if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
+#             df.loc[df["com"]==company,"comstatus"]=0
+#         else :
+#             df.loc[df["com"]==company,"comstatus"]=1
+#     df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
+# df = df[(df["comstatus"]==1)]   
 """
 上述代码是删除全是通过或者全不通过的公司，0.8为阀值
 """
@@ -126,10 +126,10 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(
 # param={"kernel":("rbf","linear","poly","sigmoid")}
 # clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
 # clf=grid_search.GridSearchCV(clf,param)
-# clf=linear_model.LogisticRegression()
+clf=linear_model.LogisticRegression()
 # weak = neighbors.KNeighborsClassifier()
-weak  = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
-clf = ensemble.BaggingClassifier(weak,max_samples = 0.7,max_features=0.7)
+# weak  = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
+# clf = ensemble.BaggingClassifier(weak,max_samples = 0.7,max_features=0.7)
 # clf = tree.DecisionTreeClassifier(max_leaf_nodes=None)
 # print clf
 # clf = tree.ExtraTreeClassifier()
@@ -238,4 +238,5 @@ print u"精确率：%.4f,召回率: %.4f" %(x2,y2)
 # df6["simi"].plot(kind='density')
 # plt.show()
 end = time.time()
-print u"花费时间：%.2fs" % (end - begin)
+print "花费时间：%.2fs" % (end - begin)
+print "precious"
