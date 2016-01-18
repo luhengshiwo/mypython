@@ -4,6 +4,7 @@ __author__="luheng"
 from pandas import Series,DataFrame
 import pandas as pd
 import numpy as np
+import re
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")

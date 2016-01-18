@@ -34,13 +34,11 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
-              "degree", "expect_salary","salary1","job1","job2","simi","location"]                 
+              "degree", "expect_salary","salary1","simi"]                 
 pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 pickle_file.close()
 print u"读入pkl成功，进行下一步"
-print len(df["com"])
-print len(df["com"].unique())
 # thre = 0.8
 # df["position"]=df["position"].fillna(-1)
 # df=df[(df["position"]!=-1)]
@@ -92,10 +90,10 @@ df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
 # df = df[(df["job"]==0)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 df.loc[(df["job_exp"] == 0)&(df["workexp_months"] <= 0), "exp"] = 1
-df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1/df["workexp_months"]
-df.loc[(df["job_exp"] > 0)&(df["workexp_months"] <= 0), "exp"] = 1/df["job_exp"]
-df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]>=df["job_exp"] ), "exp"] = 1
-df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]<df["job_exp"] ), "exp"] = df["workexp_months"]/df["job_exp"]
+df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1.0/df["workexp_months"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] <= 0), "exp"] = 1.0/df["job_exp"]
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]>=df["job_exp"] ), "exp"] = 1.0
+df.loc[(df["job_exp"] > 0)&(df["workexp_months"] > 0)&(df["workexp_months"]<df["job_exp"] ), "exp"] = df["workexp_months"].astype(float)/df["job_exp"]
 df.loc[(df["job_degree_level"]==0)&(df["degree_level"]==0),"degree"]=1
 df.loc[(df["job_degree_level"]==0)&(df["degree_level"]>0),"degree"]=0
 df.loc[(df["job_degree_level"]==1)&((df["degree_level"]==1)|(df["degree_level"]==2)),"degree"]=1
@@ -107,13 +105,16 @@ df.loc[(df["job_degree_level"]==3)&((df["degree_level"]!=3)&(df["degree_level"]!
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]==4)),"degree"]=1
 df.loc[(df["job_degree_level"]==4)&((df["degree_level"]!=4)),"degree"]=0
 df.loc[(df["salary_type"]==0)|(df["expect_salary"]==0),"salary1"]=1
-df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"]/df["salary_type"]
-df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"]/df["expect_salary"]
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]>=df["expect_salary"]),"salary1"]=df["expect_salary"].astype(float)/df["salary_type"]
+df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["expect_salary"]),"salary1"]=df["salary_type"].astype(float)/df["expect_salary"]
 '''
 正式开始跑算法了
 '''
 x = df[predictors]
 x=(x-x.mean())/x.std()
+xmean = x.mean()
+print xmean
+xstd = x.std()
 y = df["status"]
 #计算每个属性的支持度，可以选择支持度最好的几个属性
 # kbest=SelectKBest(f_classif, k=10).fit(x,y)
@@ -122,11 +123,11 @@ y = df["status"]
 # print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
     x, y, test_size=0.3, random_state=100)
-# clf=ensemble.RandomForestClassifier(n_estimators=10)
+clf=ensemble.RandomForestClassifier(n_estimators=10)
 # param={"kernel":("rbf","linear","poly","sigmoid")}
 # clf = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
 # clf=grid_search.GridSearchCV(clf,param)
-clf=linear_model.LogisticRegression()
+# clf=linear_model.LogisticRegression()
 # weak = neighbors.KNeighborsClassifier()
 # weak  = svm.SVC(cache_size=1000,class_weight="balanced",C=0.9)
 # clf = ensemble.BaggingClassifier(weak,max_samples = 0.7,max_features=0.7)
@@ -139,7 +140,12 @@ clf=linear_model.LogisticRegression()
 # scores = cross_validation.cross_val_score(clf,x,y,cv=10)
 # print scores
 clf.fit(x_train, y_train)
-print clf
+outputclf = open("D:/luheng/mydata/clf.pkl", 'wb')
+pickle.dump(clf, outputclf)
+outputxmean = open("D:/luheng/mydata/xmean.pkl", 'wb')
+pickle.dump(xmean, outputxmean)
+outputxstd = open("D:/luheng/mydata/xstd.pkl", 'wb')
+pickle.dump(xstd, outputxstd)
 # print clf.best_params_
 a=0
 b=0
@@ -238,5 +244,5 @@ print u"精确率：%.4f,召回率: %.4f" %(x2,y2)
 # df6["simi"].plot(kind='density')
 # plt.show()
 end = time.time()
-print "花费时间：%.2fs" % (end - begin)
-print "precious"
+print u"花费时间：%.2fs" % (end - begin)
+
