@@ -149,17 +149,26 @@ df["salary2"]=df["latest_workexp_job_salary"]-df["expect_salary"]
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
               "degree", "salary1","job1","job2","simi","location"]            
 df =df[(df["workexp_months"]<1000)]
-fig = plt.figure()
-fig.set(alpha=0.2)  # 设定图表颜色alpha参数
+# fig = plt.figure()
+# fig.set(alpha=0.2)  # 设定图表颜色alpha参数
 
-# plt.subplot2grid((2,3),(0,2))
+# plt.subplot2grid((2,3),(0,0))
 # status_0 = df.sex[df.status == 0].value_counts()
 # status_1 = df.sex[df.status == 1].value_counts()
-# df=pd.DataFrame({u'推荐':status_1, u'未推荐':status_0})
-# df.plot(kind='bar', stacked=True)
+# dfsex=pd.DataFrame({u'推荐':status_1, u'未推荐':status_0})
+# dfsex.plot(kind='bar', stacked=True)
 # plt.title(u"各性别的推荐情况")
 # plt.xlabel(u"性别") 
 # plt.ylabel(u"人数") 
+
+# statu = df.marriage[df.status == 0].value_counts()
+# statu = df.marriage[df.status == 1].value_counts()
+# dfmar=pd.DataFrame({u'推荐':statu, u'未推荐':statu})
+# dfmar.plot(kind='bar', stacked=True)
+# plt.title(u"婚姻状况的推荐情况")
+# plt.xlabel(u"婚姻状况") 
+# plt.ylabel(u"人数") 
+
 
 
 #人数分布
@@ -171,7 +180,7 @@ plt.ylabel(u"人数")
 #求职者分布
 plt.subplot2grid((2,3),(0,1))
 df.degree_level.value_counts().plot(kind="bar")
-plt.ylabel(u"人数")
+plt.ylabel(u"人数") 
 plt.title(u"求职者学历分布")
 
 #年龄分布
@@ -187,6 +196,24 @@ plt.scatter(df.status, df.workexp_months)
 plt.ylabel(u"工作经验")                         # 设定纵坐标名称
 plt.grid(b=True, which='major', axis='y') 
 plt.title(u"按工作经验看推荐分布 (1为推荐)")
+
+#相似度密度分布
+plt.subplot2grid((2,3),(1,1), colspan=2)
+df.simi[df.status == 0].plot(kind='kde')   
+df.simi[df.status == 1].plot(kind='kde')
+plt.xlabel(u"相似度")# plots an axis lable
+plt.ylabel(u"密度") 
+plt.title(u"推荐情况的相似度分布")
+plt.legend((u'不推荐', u'推荐'),loc='best')
+
+#工资匹配度分布
+plt.subplot2grid((3,3),(0,2))
+plt.scatter(df.status, df.salary1)
+plt.ylabel(u"工资匹配度")                         # 设定纵坐标名称
+plt.grid(b=True, which='major', axis='y') 
+plt.title(u"按工资匹配度看推荐分布 (1为推荐)")
+
+
 
 plt.show()
 end = time.time()

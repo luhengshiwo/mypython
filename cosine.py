@@ -1,25 +1,23 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 __author__ = "luheng"
-import pickle
-import numpy as np
-import scipy as sp
-import pandas as pd
-import json
-import time
-import os
-import re
-import sys
-import cPickle
-reload(sys)
-sys.setdefaultencoding('utf-8')#中文字体兼容
-# jsondata = sys.argv[1]
-jsondata ='''{"resumes":[{"resume":{"latest_workexp_job_industry":"计算机/互联网/通信/电子行业","sex":"男","expect_position":"电信/通信技术开发及应用、软件/互联网开发/系统集成、公","latest_workexp_job_spec":"计算机/互联网/通信/电子","school_name":"南京理工大学","projectexp":[{"text_simility":0.17708943087295356,"project_name":"用户分析模型建模"},{"text_simility":0.3258652209430445,"project_name":"SmartMiner智能挖掘算法开发"},{"text_simility":0.04561623158518793,"project_name":"IDE工具开发"}],"expect_salary":"10001-15000","dateofbirth":"1987-04-01","workexp":[{"text_simility":0.22574529760915765,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"38","job_salary":"8001-10000元"}],"expect_spec":"","marriage":"未婚","id":"CE11B248B1FC68D624CF3204ECC9185A","expect_industry":"互联网/电子商务、通信/电信运营、增值服务、计算机软件、通信/电信/网络设备、政府/公共事业/非盈利机构、交通/运输、学术/科研","expect_location":"江苏","name":"张为","workexp_months":36,"degree_level":"硕士","expect_jobtype":"","latest_workexp_job_salary":"8001-10000元","latest_workexp_job_position":"计算机软件","school_level":0},"job":{"position":"数据挖掘开发工程师","salary_type":"8000-10000","company_id":"111","state":"江苏省","position_spec":"计算机/互联网/通信/电子","job_degree_level":"本科","position_category":"算法工程师","industry":"计算机/互联网/通信/电子行业","job_exp":"1年以上","comp_name":"南京枇杷派网络科技有限公司","city":"南京市"},"skill_sim":0},{"resume":{"latest_workexp_job_industry":"计算机/互联网/通信/电子行业","sex":"","expect_position":"推荐系统项目","latest_workexp_job_spec":"计算机/互联网/通信/电子","school_name":"阜阳大学","projectexp":[],"expect_salary":"面议","dateofbirth":"","workexp":[{"text_simility":0.3020504400219017,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"3","job_salary":""},{"text_simility":0.1266333754589638,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"13","job_salary":""}],"expect_spec":"","marriage":"","id":"F1D715408E0F58CC274F29289CF2AD93","expect_industry":"计算机/互联网/通信/电子行业","expect_location":"","name":"王亚军","workexp_months":12,"degree_level":"本科","expect_jobtype":"","latest_workexp_job_salary":"","latest_workexp_job_position":"计算机软件","school_level":0},"job":{"position":"数据挖掘开发工程师","salary_type":"8000-10000","company_id":"111","state":"江苏省","position_spec":"计算机/互联网/通信/电子","job_degree_level":"本科","position_category":"算法工程师","industry":"计算机/互联网/通信/电子行业","job_exp":"1年以上","comp_name":"南京枇杷派网络科技有限公司","city":"南京市"},"skill_sim":0}]}'''
 
-data = json.loads(jsondata)
+from math import sqrt
+import json
+import numpy as np
+import re
+import pandas as pd
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')#中文字体兼容 
+source= sys.argv[1]
+# source = "D:/luheng/mydata/jobResumes4"#json文件所在目录
+data = open(source)
 x=[]
-peopleid=[]
-for result in  data["resumes"]:
+y=[]
+peoid=[]
+for line in  data:
+	result = json.loads(line)
 	sex ,age,workexp_months, exp, marriage, school_level, degree_level,degree, salary_type, latest_workexp_job_salary, salary1,salary2,job1,job2,simi,location=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 	#sex
@@ -186,31 +184,57 @@ for result in  data["resumes"]:
 	#simi
 	simi=max(projectsimi_max,worksimi_max)
 	#location
+	if result["resume"]["expect_location"] == result["job"]["city"]:
+		location=1
+	else :
+	    location=0		
 	#job1
-	#job2
-	x_1 = [sex ,age, exp, marriage, school_level, degree_level,degree, expect_salary, salary1,simi]
+	if result["resume"]["latest_workexp_job_spec"] ==result["job"]["position_spec"]:
+		job1=1
+	else :
+	    job1=0	
+	#job2    
+	if result["resume"]["latest_workexp_job_position"] ==result["job"]["position"]:
+		job2=1
+	else :
+	    job2=0    
+
+	#industry
+	if result["resume"]["latest_workexp_job_industry"] ==result["job"]["industry"]:
+		industry=1
+	else :
+	    industry=0
+	#id
+	peopleid = result["resume"]["id"]     
+	peoid.append(peopleid)
+	x_1 = [industry,job1,job2,exp, degree, salary1,location,simi,peopleid]
 	x.append(x_1)
-	peopleid.append(result["resume"]["id"])
-x = pd.DataFrame(x)
-x = x.rename(columns={0:"sex" ,1:"age",2 :"exp",3: "marriage", 4:"school_level",5: "degree_level",6:"degree", 7:"expect_salary", 8:"salary1",9:"simi"})
-begin = time.time()
-path = "D:/luheng/mydata"
-# path = "/home/zhangwei/project/datamining/core/"
-clf_file = open(path +"\\clf.pkl", "rb")
-clf = cPickle.load(clf_file)
-clf_file.close()
-xmean_file = open(path +"\\xmean.pkl", "rb")
-xmean = pickle.load(xmean_file)
-xmean_file.close()
-xstd_file = open(path +"\\xstd.pkl", "rb")
-xstd = pickle.load(xstd_file)
-xstd_file.close()
-x=(x-xmean)/xstd
-y = clf.predict_proba(x)
-print x
-print y
-yp = [y[1] for y in y]
-dfj =  pd.DataFrame(yp,columns =["prob"],index =peopleid )
-json = dfj.to_json(orient="index")
-print json
-end = time.time()
+# for cov in x :
+# 	print cov[0:-1]
+# y = [1,1,1,1,1,1,1]
+# print y	
+
+def cosdist(x):
+	x_up=0
+	x_down=0
+	for a in x:
+		x_up+=a
+		x_down +=a**2
+	if x_down==0:
+		return 0
+	else :
+	    return x_up/sqrt(x_down*7)
+# answer  = {}
+# i =1
+# for cov in x :
+# 	answer[cov[-1]] = cosdist(cov[0:-2]) *cov[-2]
+# 	i+=1
+# answer =  sorted(answer.iteritems(), key=lambda d:d[1], reverse = True )	
+# print answer
+for cov in x :
+	y.append(cosdist(cov[0:-2]) *cov[-2])
+dfj =  pd.DataFrame(y,columns =["cosine"],index =peoid )
+answer = dfj.to_json(orient="index")
+print answer
+
+    

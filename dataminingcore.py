@@ -184,7 +184,7 @@ simi=(np.amax(projectsimi)+np.amax(worksimi))/2
 #job1
 #job2
 x =[[sex ,age, exp, marriage, school_level, degree_level,degree, salary_type, salary1,simi]]
-path = "D:\\luheng\\mypython"
+path = "D:\\luheng\\mydata"
 clf_file = open(path +"\\clf.pkl", "rb")
 clf = pickle.load(clf_file)
 clf_file.close()
@@ -194,8 +194,6 @@ xmean_file.close()
 xstd_file = open(path +"\\xstd.pkl", "rb")
 xstd = pickle.load(xstd_file)
 xstd_file.close()
-
 y = clf.predict_proba(x)
-
 print y[0]
 print u"花费时间：%.2fs" % (end - begin)

@@ -11,15 +11,17 @@ import os
 import re
 import sys
 import cPickle
+# from sklearn import tree
 reload(sys)
 sys.setdefaultencoding('utf-8')#中文字体兼容
-# jsondata = sys.argv[1]
-jsondata ='''{"resumes":[{"resume":{"latest_workexp_job_industry":"计算机/互联网/通信/电子行业","sex":"男","expect_position":"电信/通信技术开发及应用、软件/互联网开发/系统集成、公","latest_workexp_job_spec":"计算机/互联网/通信/电子","school_name":"南京理工大学","projectexp":[{"text_simility":0.17708943087295356,"project_name":"用户分析模型建模"},{"text_simility":0.3258652209430445,"project_name":"SmartMiner智能挖掘算法开发"},{"text_simility":0.04561623158518793,"project_name":"IDE工具开发"}],"expect_salary":"10001-15000","dateofbirth":"1987-04-01","workexp":[{"text_simility":0.22574529760915765,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"38","job_salary":"8001-10000元"}],"expect_spec":"","marriage":"未婚","id":"CE11B248B1FC68D624CF3204ECC9185A","expect_industry":"互联网/电子商务、通信/电信运营、增值服务、计算机软件、通信/电信/网络设备、政府/公共事业/非盈利机构、交通/运输、学术/科研","expect_location":"江苏","name":"张为","workexp_months":36,"degree_level":"硕士","expect_jobtype":"","latest_workexp_job_salary":"8001-10000元","latest_workexp_job_position":"计算机软件","school_level":0},"job":{"position":"数据挖掘开发工程师","salary_type":"8000-10000","company_id":"111","state":"江苏省","position_spec":"计算机/互联网/通信/电子","job_degree_level":"本科","position_category":"算法工程师","industry":"计算机/互联网/通信/电子行业","job_exp":"1年以上","comp_name":"南京枇杷派网络科技有限公司","city":"南京市"},"skill_sim":0},{"resume":{"latest_workexp_job_industry":"计算机/互联网/通信/电子行业","sex":"","expect_position":"推荐系统项目","latest_workexp_job_spec":"计算机/互联网/通信/电子","school_name":"阜阳大学","projectexp":[],"expect_salary":"面议","dateofbirth":"","workexp":[{"text_simility":0.3020504400219017,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"3","job_salary":""},{"text_simility":0.1266333754589638,"job_spec":"计算机/互联网/通信/电子","job_title_category":"计算机软件","job_industry_category":"计算机/互联网/通信/电子行业","job_months":"13","job_salary":""}],"expect_spec":"","marriage":"","id":"F1D715408E0F58CC274F29289CF2AD93","expect_industry":"计算机/互联网/通信/电子行业","expect_location":"","name":"王亚军","workexp_months":12,"degree_level":"本科","expect_jobtype":"","latest_workexp_job_salary":"","latest_workexp_job_position":"计算机软件","school_level":0},"job":{"position":"数据挖掘开发工程师","salary_type":"8000-10000","company_id":"111","state":"江苏省","position_spec":"计算机/互联网/通信/电子","job_degree_level":"本科","position_category":"算法工程师","industry":"计算机/互联网/通信/电子行业","job_exp":"1年以上","comp_name":"南京枇杷派网络科技有限公司","city":"南京市"},"skill_sim":0}]}'''
-
-data = json.loads(jsondata)
+begin = time.time()
+# source = sys.argv[1]
+source = "D:/luheng/mydata/jobResumes"#json文件所在目录
+data = open(source)
 x=[]
 peopleid=[]
-for result in  data["resumes"]:
+for line in  data:
+	result = json.loads(line)
 	sex ,age,workexp_months, exp, marriage, school_level, degree_level,degree, salary_type, latest_workexp_job_salary, salary1,salary2,job1,job2,simi,location=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 	#sex
@@ -199,6 +201,9 @@ path = "D:/luheng/mydata"
 clf_file = open(path +"\\clf.pkl", "rb")
 clf = cPickle.load(clf_file)
 clf_file.close()
+# tree.export_graphviz(clf,out_file = "D:/luheng/mypython/tree.dot")
+# with open("D:/luheng/mypython/tree.dot", 'w') as f:
+#     f = tree.export_graphviz(clf, out_file=f) 
 xmean_file = open(path +"\\xmean.pkl", "rb")
 xmean = pickle.load(xmean_file)
 xmean_file.close()
@@ -206,11 +211,11 @@ xstd_file = open(path +"\\xstd.pkl", "rb")
 xstd = pickle.load(xstd_file)
 xstd_file.close()
 x=(x-xmean)/xstd
-y = clf.predict_proba(x)
-print x
-print y
-yp = [y[1] for y in y]
-dfj =  pd.DataFrame(yp,columns =["prob"],index =peopleid )
-json = dfj.to_json(orient="index")
-print json
+y = clf.decision_function(x)
+print len(y)
+# yp = [y[1] for y in y]
+# print yp
+# dfj =  pd.DataFrame(yp,columns =["prob"],index =peopleid )
+# json = dfj.to_json(orient="index")
+# print json
 end = time.time()

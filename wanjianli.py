@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 __author__ = "luheng"
 import pickle
+import cPickle
 import numpy as np
 import scipy as sp
 import pandas as pd
@@ -34,45 +35,67 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 begin = time.time()
 predictors = [ "sex","age", "exp", "marriage", "school_level", "degree_level",
-              "degree", "expect_salary","salary1","simi"]                 
+              "degree", "expect_salary","salary1","simi","oldexp1","oldexp2","hrexp1","hrexp2","indu"]                 
 pickle_file = open("D:/luheng/mydata/truedata.pkl", "rb")
 df = pickle.load(pickle_file)
 pickle_file.close()
+# df = pd.read_csv("D:/luheng/mypython/proofread.csv")
 print u"读入pkl成功，进行下一步"
-# thre = 0.8
-# df["position"]=df["position"].fillna(-1)
-# df=df[(df["position"]!=-1)]
-# for company in df["com"].unique():
-#     mycom = df[(df["com"]==company)]
-#     for position in mycom["position"].unique():
-#         mypos = df[(df["position"]==position)&(df["com"]==company)]
-#         df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
-#     passnum = mycom[(mycom["status"]==1)]
-#     failurenum =  mycom[(mycom["status"]==0)]
-#     if len(mycom)<5:
-#         df.loc[df["com"]==company,"comstatus"]=1
-#     else:
-#         if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
-#             df.loc[df["com"]==company,"comstatus"]=0
-#         else :
-#             df.loc[df["com"]==company,"comstatus"]=1
-#     df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))           
+thre = 0.8
+df["position"]=df["position"].fillna(-1)
+df=df[(df["position"]!=-1)]
+for company in df["com"].unique():
+    mycom = df[(df["com"]==company)]
+    for position in mycom["position"].unique():
+        mypos = df[(df["position"]==position)&(df["com"]==company)]
+        df.loc[df["position"]==position,"positionlen"]=1.0/len(mypos)
+    passnum = mycom[(mycom["status"]==1)]
+    failurenum =  mycom[(mycom["status"]==0)]
+    if len(mycom)<5:
+        df.loc[df["com"]==company,"comstatus"]=1
+    else:
+        if float(len(passnum))/len(mycom)>thre or float(len(failurenum))/len(mycom)>thre:
+            df.loc[df["com"]==company,"comstatus"]=0
+        else :
+            df.loc[df["com"]==company,"comstatus"]=1
+    df.loc[df["com"]==company,"comstatus2"]=max(float(len(passnum))/len(mycom),float(len(failurenum))/len(mycom))
+print len(df)               
 # df = df[(df["comstatus"]==1)]   
 """
 上述代码是删除全是通过或者全不通过的公司，0.8为阀值
 """
 df = df[(df["peoplejob2"]!="dosomething")]
 df = df[(df["hrjob2"]!="dosomething")]
+df = df[(df["peopleindu"]!="dosomething")]
 df=df[(df["simi"]!=-1)]
-df.loc[df["hrjob1"] == df["peoplejob1"], "job1"] = 1
-df.loc[df["hrjob1"] != df["peoplejob1"], "job1"] = 0
-df.loc[df["hrjob2"] == df["peoplejob2"], "job2"] = 1
-df.loc[df["hrjob2"] != df["peoplejob2"], "job2"] = 0
+print len(df)
+df.loc[df["hrjob1"] == df["peoplejob1"], "hrpeopleold1"] = 1
+df.loc[df["hrjob1"] != df["peoplejob1"], "hrpeopleold1"] = 0
+df.loc[df["hrjob2"] == df["peoplejob2"], "hrpeopleold2"] = 1
+df.loc[df["hrjob2"] != df["peoplejob2"], "hrpeopleold2"] = 0
+
+df.loc[df["hrindu"] == df["peopleindu"], "indu"] = 1
+df.loc[df["hrindu"] != df["peopleindu"], "indu"] = 0
+
+df.loc[df["peoplejob1"] == df["expectposition1"], "oldexp1"] = 1
+df.loc[df["peoplejob1"] != df["expectposition1"], "oldexp1"] = 0
+df.loc[df["peoplejob2"] == df["expectposition2"], "oldexp2"] = 1
+df.loc[df["peoplejob2"] != df["expectposition2"], "oldexp2"] = 0
+
+df.loc[df["hrjob1"] == df["expectposition1"], "hrexp1"] = 1
+df.loc[df["hrjob1"] != df["expectposition1"], "hrexp1"] = 0
+df.loc[df["hrjob2"] == df["expectposition2"], "hrexp2"] = 1
+df.loc[df["hrjob2"] != df["expectposition2"], "hrexp2"] = 0
 change= ["sex", "age", "workexp_months", "job_exp", "marriage", "school_level", "degree_level",
-              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","job1","job2"]   
+              "job_degree_level", "salary_type", "latest_workexp_job_salary", "expect_salary", "location","hrpeopleold1","hrpeopleold2","oldexp1","oldexp2","hrexp1","hrexp2","indu"]   
 df[change] = df[change].astype(int)
 df["position"]=df["position"].fillna(-1)
 df=df[(df["position"]!=-1)]
+print len(df)
+df=df[(df["location"]==1)]
+print len(df)
+df=df[(df["hrpeopleold1"]==1)]
+print len(df)
 """
 对职位大类进行分类，后面可以按大类跑算法
 """
@@ -87,7 +110,7 @@ df.loc[(df["hrjob1"]==u"公务员-翻译-其他"),"job"]=7
 df.loc[(df["hrjob1"]==u"生物-制药-医疗-护理"),"job"]=8
 df.loc[(df["hrjob1"]==u"咨询-法律-教育-科研"),"job"]=9
 df.loc[(df["hrjob1"]==u"生产-营运-采购-物流"),"job"]=10
-# df = df[(df["job"]==0)]
+# df = df[(df["job"]==2)]
 #计算机-互联网-通信-电子 人事-行政-高级管理  会计-金融-银行-保险 销售-客服-技术支持   广告-市场-媒体-艺术   建筑-房地产  服务业 公务员-翻译-其他 生物-制药-医疗-护理  咨询-法律-教育-科研 生产-营运-采购-物流
 df.loc[(df["job_exp"] == 0)&(df["workexp_months"] <= 0), "exp"] = 1
 df.loc[(df["job_exp"] == 0)&(df["workexp_months"] > 0), "exp"] = 1.0/df["workexp_months"]
@@ -113,12 +136,11 @@ df.loc[(df["salary_type"]!=0)&(df["expect_salary"]!=0)&(df["salary_type"]<df["ex
 x = df[predictors]
 x=(x-x.mean())/x.std()
 xmean = x.mean()
-print xmean
 xstd = x.std()
 y = df["status"]
 #计算每个属性的支持度，可以选择支持度最好的几个属性
 # kbest=SelectKBest(f_classif, k=10).fit(x,y)
-# x=kbest.transform(x)
+# # x=kbest.transform(x)
 # print  kbest.get_support()
 # print kbest.scores_
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(
@@ -141,11 +163,11 @@ clf=ensemble.RandomForestClassifier(n_estimators=10)
 # print scores
 clf.fit(x_train, y_train)
 outputclf = open("D:/luheng/mydata/clf.pkl", 'wb')
-pickle.dump(clf, outputclf)
+cPickle.dump(clf, outputclf)
 outputxmean = open("D:/luheng/mydata/xmean.pkl", 'wb')
-pickle.dump(xmean, outputxmean)
+cPickle.dump(xmean, outputxmean)
 outputxstd = open("D:/luheng/mydata/xstd.pkl", 'wb')
-pickle.dump(xstd, outputxstd)
+cPickle.dump(xstd, outputxstd)
 # print clf.best_params_
 a=0
 b=0
