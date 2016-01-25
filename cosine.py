@@ -10,8 +10,8 @@ import pandas as pd
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')#中文字体兼容 
-source= sys.argv[1]
-# source = "D:/luheng/mydata/jobResumes4"#json文件所在目录
+# source= sys.argv[1]
+source = "D:/luheng/mydata/jobResumes4"#json文件所在目录
 data = open(source)
 x=[]
 y=[]
@@ -231,7 +231,7 @@ def cosdist(x):
 # 	i+=1
 # answer =  sorted(answer.iteritems(), key=lambda d:d[1], reverse = True )	
 # print answer
-for cov in x :
+for cov in x : 
 	y.append(cosdist(cov[0:-2]) *cov[-2])
 dfj =  pd.DataFrame(y,columns =["cosine"],index =peoid )
 answer = dfj.to_json(orient="index")
