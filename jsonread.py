@@ -314,6 +314,9 @@ df.loc[df["status_title"] == u"转正", "status"] = 1
 df.loc[df["status_title"] == u"筛选待定", "status"] = 2
 df.loc[df["status_title"] == u"辞退", "status"] = 1
 df.loc[df["status_title"] == u"需再联系", "status"] = 1
+print len(df)
+df2 = df[(df["status"]==0)]
+print len(df2)
 df.loc[df["sex"] == u"M", "sex"] = 0
 df.loc[df["sex"] == u"F", "sex"] = 1
 df["sex"] = df["sex"].fillna(0)

@@ -11,11 +11,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')#中文字体兼容 
 # source= sys.argv[1]
-source = "D:/luheng/mydata/jobResumes4"#json文件所在目录
+source = "D:/luheng/mydata/jobResumes5"#json文件所在目录
 data = open(source)
 x=[]
 y=[]
 peoid=[]
+cosinenum=[]
+industryprop,salaryprop,expprop,job1prop,job2prop,locationprop,degreeprop,simiprop=[],[],[],[],[],[],[],[]
 for line in  data:
 	result = json.loads(line)
 	sex ,age,workexp_months, exp, marriage, school_level, degree_level,degree, salary_type, latest_workexp_job_salary, salary1,salary2,job1,job2,simi,location=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -47,10 +49,18 @@ for line in  data:
 		job_exp = 24
 	elif job_exp_notnum == "3年以上":
 		job_exp = 36
+	elif job_exp_notnum == "4年以上":
+		job_exp = 48		
 	elif job_exp_notnum == "5年以上":
 		job_exp = 60
+	elif job_exp_notnum == "6年以上":
+		job_exp = 72
+	elif job_exp_notnum == "7年以上":
+		job_exp = 84				
 	elif job_exp_notnum == "8年以上":
 		job_exp = 96
+	elif job_exp_notnum == "9年以上":
+		job_exp = 108		
 	elif job_exp_notnum == "10年以上":
 		job_exp = 120									
 	if job_exp==0:
@@ -63,9 +73,10 @@ for line in  data:
 	        exp = 1.0/job_exp
 	    elif workexp_months>0:
 	        if workexp_months>=job_exp:
-	            exp = 1
+	            exp = float(job_exp)/workexp_months
 	        elif workexp_months<job_exp:    
-	            exp = workexp_months/job_exp    	    	
+	            exp = float(workexp_months)/job_exp 
+	expprop.append(exp)           	    	
 	#marriage
 	marriage_notnum = result["resume"]["marriage"]
 	if marriage_notnum == "未婚":
@@ -132,15 +143,18 @@ for line in  data:
 	        degree =1	    
 	    else:
 	    	degree = 0 
-	#salary_type    	   	   	
+	degreeprop.append(degree)    	
+	#salary_type 
+	hrsalarygap=0   	   	   	
 	salary_type_notnum = result["job"]["salary_type"]
 	salary_type = 0
 	if salary_type_notnum != None:
 	    salary= re.findall(r'(\w*[0-9]+)\w*', salary_type_notnum)
 	    if len(salary) == 2:
 	        salary_type = (int(salary[0]) + int(salary[1])) / 2
+	        hrsalarygap = salary_type-int(salary[0])
 	    elif len(salary) == 1:
-	        salary_type = int(salary[0])       
+	        salary_type = int(salary[0])              
 	#latest_workexp_job_salary
 	latest_workexp_job_salary_notnum = result["resume"]["latest_workexp_job_salary"]
 	latest_workexp_job_salary = 0
@@ -150,23 +164,30 @@ for line in  data:
 	        latest_workexp_job_salary = (int(salary[0]) + int(salary[1])) / 2
 	    elif len(salary) == 1:
 	        latest_workexp_job_salary = int(salary[0]) 
-	#expect_salary       
+	#expect_salary   
+	expsalarygap=0    
 	expect_salary_notnum = result["resume"]["expect_salary"]
 	expect_salary = 0
 	if expect_salary_notnum != None:
 	    salary= re.findall(r'(\w*[0-9]+)\w*', expect_salary_notnum)
 	    if len(salary) == 2:
 	        expect_salary = (int(salary[0]) + int(salary[1])) / 2
+	        expsalarygap =expect_salary-int(salary[0])
 	    elif len(salary) == 1:
 	        expect_salary = int(salary[0]) 
 	#salary1
 	salary1 =0
 	if salary_type ==0 or expect_salary ==0:
 		salary1 =1
-	elif salary_type>=expect_salary	:
+	elif (salary_type-hrsalarygap)<=(expect_salary+expsalarygap) and (salary_type-hrsalarygap)>=(expect_salary-expsalarygap):
+		salary1=1
+	elif (expect_salary-expsalarygap)<=	(salary_type+hrsalarygap) and (expect_salary-expsalarygap)>=(salary_type-hrsalarygap):
+		salary1=1
+	elif (salary_type-hrsalarygap)>(expect_salary+expsalarygap):
 		salary1 = float(expect_salary)/salary_type
-	elif salary_type<expect_salary	:
+	elif (salary_type+hrsalarygap)<(expect_salary-expsalarygap):
 		salary1 = float(salary_type)/expect_salary
+	salaryprop.append(salary1)	  
 	#projectsimi_max
 	projectsimi = [pro["text_simility"] for pro in result["resume"]["projectexp"]]
 	try: 
@@ -183,47 +204,61 @@ for line in  data:
 	#np.amax(worksimi)
 	#simi
 	simi=max(projectsimi_max,worksimi_max)
+	simiprop.append(simi)
 	#location
-	if result["resume"]["expect_location"] == result["job"]["city"]:
+	joblocation = result["job"]["city"]
+	if joblocation.find("市")!=-1:
+	    joblocation2 = joblocation[0:-1]
+	else :
+		joblocation2 = joblocation
+	if result["resume"]["expect_location"].find(joblocation2) !=-1:
 		location=1
 	else :
-	    location=0		
+	    location=0	
+	locationprop.append(location)    	
 	#job1
 	if result["resume"]["latest_workexp_job_spec"] ==result["job"]["position_spec"]:
 		job1=1
 	else :
-	    job1=0	
+	    job1=0
+	job1prop.append(job1)    	
 	#job2    
 	if result["resume"]["latest_workexp_job_position"] ==result["job"]["position"]:
 		job2=1
 	else :
 	    job2=0    
-
+	job2prop.append(job2)
 	#industry
 	if result["resume"]["latest_workexp_job_industry"] ==result["job"]["industry"]:
 		industry=1
 	else :
 	    industry=0
+	industryprop.append(industry)    
 	#id
 	peopleid = result["resume"]["id"]     
 	peoid.append(peopleid)
-	x_1 = [industry,job1,job2,exp, degree, salary1,location,simi,peopleid]
+	x_1 = [industry,exp, degree, salary1,location,simi,peopleid]
 	x.append(x_1)
-# for cov in x :
-# 	print cov[0:-1]
-# y = [1,1,1,1,1,1,1]
-# print y	
+#余弦相似度
+# def cosdist(x): 
+# 	x_up=0
+# 	x_down=0
+# 	for a in x:
+# 		x_up+=a
+# 		x_down +=a**2			
+# 	if x_down==0:
+# 		return 0
+# 	else :
+# 	    return x_up/sqrt(x_down*7)
 
 def cosdist(x):
-	x_up=0
-	x_down=0
-	for a in x:
-		x_up+=a
-		x_down +=a**2
-	if x_down==0:
+    x_up = sum(x)
+    x_down = sum([x1**2 for x1 in x ])	
+    print x_down
+    if x_down==0:
 		return 0
-	else :
-	    return x_up/sqrt(x_down*7)
+    else:
+        return x_up/sqrt(x_down*5)  
 # answer  = {}
 # i =1
 # for cov in x :
@@ -231,10 +266,15 @@ def cosdist(x):
 # 	i+=1
 # answer =  sorted(answer.iteritems(), key=lambda d:d[1], reverse = True )	
 # print answer
+theta1=0.5
+theta2=0.5
 for cov in x : 
-	y.append(cosdist(cov[0:-2]) *cov[-2])
-dfj =  pd.DataFrame(y,columns =["cosine"],index =peoid )
-answer = dfj.to_json(orient="index")
+	cosinenum.append(cosdist(cov[0:-2]))
+	y.append(cosdist(cov[0:-2]) *cov[-2]*pow(cov[3],theta1)*pow(cov[5],theta2))
+dfj=pd.DataFrame([peoid,y,industryprop,salaryprop,expprop,job1prop,locationprop,degreeprop,simiprop,cosinenum]).T
+dfj=dfj.rename(columns={0:"id",1:"score",2:"industrysimilarity",3:"salarysimilarity",4:"workexpsimilarity",5:"jobtitlesimilarity",6:"locationsimilarity",7:"degreesimilarity",8:"contentsimilarity",9:"cosine"})
+# dfj.index = peoid
+answer = dfj.to_json(orient="records")
 print answer
 
     
