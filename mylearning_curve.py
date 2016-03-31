@@ -103,6 +103,7 @@ class aoTest():
 
 if __name__ == '__main__':
 
+#ttt
 num, errorNum, allNum, precision = [], [], [], []
     for j in range(1, 2489):
         try:
